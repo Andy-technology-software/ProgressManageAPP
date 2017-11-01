@@ -1,0 +1,196 @@
+//
+//  SelfViewController.m
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/4.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "SelfViewController.h"
+
+#import "SelfHeadModel.h"
+
+#import "SelfHeadTableViewCell.h"
+
+#import "YBImgPickerViewController.h"
+
+#import <AssetsLibrary/AssetsLibrary.h>
+
+#import "SignIndexViewController.h"
+
+#import "DailyViewController.h"
+
+#import "RegistrationViewController.h"
+
+#import "AuditViewController.h"
+
+#import "ChartPartIndexViewController.h"
+
+#import "SeetingViewController.h"
+
+#import "RealtimePositioningViewController.h"
+@interface SelfViewController ()<UITableViewDataSource,UITableViewDelegate,YBImgPickerViewControllerDelegate,selfCellDelegate>{
+    UITableView* _tableView;
+}
+@property(nonatomic,strong)NSMutableArray* dataSourceArr;
+
+@end
+
+@implementation SelfViewController
+
+-(void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    
+    [[self rdv_tabBarController] setTabBarHidden:NO animated:YES];
+    [self.navigationController setNavigationBarHidden:YES animated:animated];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    
+    [self.navigationController setNavigationBarHidden:NO animated:animated];
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.title = @"我";
+    self.view.backgroundColor  =[MyController colorWithHexString:DEFAULTCOLOR];
+    self.dataSourceArr = [[NSMutableArray alloc] init];
+    
+    SelfHeadModel* model = [[SelfHeadModel alloc] init];
+    model.headImage = @"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1493870730701&di=fb0a663047512be34727ad693ff80b8f&imgtype=0&src=http%3A%2F%2Fd.hiphotos.baidu.com%2Fzhidao%2Fpic%2Fitem%2Fd4628535e5dde7112bd4ba00a5efce1b9c1661c6.jpg";
+    model.cname = @"青岛一凌网集成有限公司";
+    model.name = @"皮卡丘";
+    [self.dataSourceArr addObject:model];
+    
+    [self createTableView];
+}
+
+#pragma mark - 初始化tableView
+- (void)createTableView{
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - 49) style:UITableViewStylePlain];
+    _tableView.dataSource = self;
+    _tableView.delegate = self;
+    //分割线类型
+    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.showsVerticalScrollIndicator = NO;
+    _tableView.backgroundColor = [UIColor clearColor];
+    [self.view addSubview:_tableView];
+}
+
+#pragma mark - tableView行数
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return self.dataSourceArr.count;
+}
+#pragma mark - tableVie点击cell
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+}
+
+#pragma mark - 自定义tableView
+- (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    NSString *cellIdentifier = @"headcell";
+    SelfHeadTableViewCell *celll = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    if (!celll) {
+        celll = [[SelfHeadTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+    }
+    celll.selectionStyle = UITableViewCellSelectionStyleNone;
+    SelfHeadModel* model = self.dataSourceArr[indexPath.row];
+    celll.selfCellDelegate = self;
+    [celll configCellWithModel:model];
+    return celll;
+}
+
+#pragma mark - tableView行高
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    SelfHeadModel *model = nil;
+    if (indexPath.row < self.dataSourceArr.count) {
+        model = [self.dataSourceArr objectAtIndex:indexPath.row];
+    }
+    
+    NSString *stateKey = nil;
+    if (model.isExpand) {
+        stateKey = @"expanded";
+    } else {
+        stateKey = @"unexpanded";
+    }
+    
+    return [SelfHeadTableViewCell hyb_heightForTableView:tableView config:^(UITableViewCell *sourceCell) {
+        SelfHeadTableViewCell *cell = (SelfHeadTableViewCell *)sourceCell;
+        [cell configCellWithModel:model];
+    } cache:^NSDictionary *{
+        return @{kHYBCacheUniqueKey: [NSString stringWithFormat:@"%d", model.uid],
+                 kHYBCacheStateKey : stateKey,
+                 kHYBRecalculateForStateKey : @(NO)
+                 };
+    }];
+
+}
+
+- (void)sendBackSelectNum:(NSInteger)seleIndex{
+    if (0 == seleIndex) {
+        NSLog(@"签到");
+        SignIndexViewController* vc = [[SignIndexViewController alloc] init];
+        [self.navigationController pushViewController:vc animated:YES];
+    }else if (1 == seleIndex){
+        NSLog(@"日报");
+        DailyViewController* vc = [[DailyViewController alloc] init];
+        [self.navigationController pushViewController:vc animated:YES];
+    }else if (2 == seleIndex){
+        NSLog(@"统计");
+        ChartPartIndexViewController* vc = [[ChartPartIndexViewController alloc] init];
+        vc.title = @"统计分析";
+        [self.navigationController pushViewController:vc animated:YES];
+    }else if (3 == seleIndex){
+        NSLog(@"设置");
+        SeetingViewController* vc = [[SeetingViewController alloc] init];
+        vc.title = @"设置";
+        [self.navigationController pushViewController:vc animated:YES];
+    }else if (4 == seleIndex){
+        NSLog(@"定位");
+        RealtimePositioningViewController* vc = [[RealtimePositioningViewController alloc] init];
+        vc.title = @"轨迹";
+        [self.navigationController pushViewController:vc animated:YES];
+    }else if (5 == seleIndex){
+        NSLog(@"外出");
+        RegistrationViewController* vc = [[RegistrationViewController alloc] init];
+        [self.navigationController pushViewController:vc animated:YES];
+    }else if (6 == seleIndex){
+        NSLog(@"请假");
+    }else if (7 == seleIndex){
+        NSLog(@"审核");
+        AuditViewController* vc = [[AuditViewController alloc] init];
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+}
+
+- (void)sendBackChangeIamge{
+    YBImgPickerViewController * next = [[YBImgPickerViewController alloc]init];
+    [next showInViewContrller:self choosenNum:0 delegate:self];
+}
+
+- (void)YBImagePickerDidFinishWithImages:(NSArray *)imageArray {
+    NSLog(@"----%@",imageArray);
+    for (UIImage * image in imageArray) {
+        SelfHeadModel* model = [self.dataSourceArr lastObject];
+        model.headImage = @"https://ss0.bdstatic.com/5aV1bjqh_Q23odCf/static/superman/img/logo/bd_logo1_31bdc765.png";
+        [_tableView reloadData];
+    }
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

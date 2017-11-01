@@ -1,0 +1,469 @@
+//
+//  AppDelegate.m
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/3.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "AppDelegate.h"
+#import "LingXinViewController.h"
+#import "SalesViewController.h"
+#import <UserNotifications/UserNotifications.h>
+#import "EaseSDKHelper.h"
+
+#import "SelfViewController.h"
+
+#import "LoginViewController.h"
+
+#import "GuideViewController.h"
+
+#import "CustomerViewController.h"
+
+#import <MAMapKit/MAMapKit.h>
+
+static NSString *GDAPIKey = @"d48a4e19d3e04be694d24798605803dd";
+
+//两次提示的默认间隔
+static const CGFloat kDefaultPlaySoundInterval = 3.0;
+static NSString *kMessageType = @"MessageType";
+static NSString *kConversationChatter = @"ConversationChatter";
+@interface AppDelegate ()<EMClientDelegate,UNUserNotificationCenterDelegate,EMChatManagerDelegate>
+@property (strong, nonatomic) NSDate *lastPlaySoundDate;
+
+@end
+
+@implementation AppDelegate
+
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    // Override point for customization after application launch.
+    [self configureAPIKey];
+    
+    // 设置应用程序的图标右上角的数字
+    [application setApplicationIconBadgeNumber:0];
+//    // 使用 UNUserNotificationCenter 来管理通知
+//    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+//    //监听回调事件
+//    center.delegate = self;
+//    
+//    //iOS 10 使用以下方法注册，才能得到授权
+//    [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionSound)
+//                          completionHandler:^(BOOL granted, NSError * _Nullable error) {
+//                              // Enable or disable features based on authorization.
+//                          }];
+//    
+//    //获取当前的通知设置，UNNotificationSettings 是只读对象，不能直接修改，只能通过以下方法获取
+//    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
+//        
+//    }];
+    
+    //处理iOS8本地推送不能收到
+    float sysVersion=[[UIDevice currentDevice]systemVersion].floatValue;
+    if (sysVersion>=8.0) {
+        UIUserNotificationType type=UIUserNotificationTypeBadge | UIUserNotificationTypeAlert | UIUserNotificationTypeSound;
+        UIUserNotificationSettings *setting=[UIUserNotificationSettings settingsForTypes:type categories:nil];
+        [[UIApplication sharedApplication]registerUserNotificationSettings:setting];
+    }
+    
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.window.backgroundColor = [UIColor whiteColor];
+    [self.window makeKeyAndVisible];
+    [self customizeInterface];
+    
+    NSUserDefaults*userDefaults=[NSUserDefaults standardUserDefaults];
+    if ([userDefaults objectForKey:@"FirstOn"]) {
+        //此处还得判断是否登录
+        [self setupViewControllers];
+        [self.window setRootViewController:self.viewController];
+    }else{
+        self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:[[GuideViewController alloc] init]];
+    }
+    
+#warning SDK注册 APNS文件的名字, 需要与后台上传证书时的名字一一对应
+    NSString *apnsCertName = nil;
+#if DEBUG
+    apnsCertName = @"huanxinDevePush";
+#else
+    apnsCertName = @"huanxinProPush";
+#endif
+    EMOptions *options = [EMOptions optionsWithAppkey:@"ilingnet#progressmanage"];
+    options.apnsCertName = @"huanxinDevePush";
+    EMError *error = [[EMClient sharedClient] initializeSDKWithOptions:options];
+    
+    [[EaseSDKHelper shareHelper] hyphenateApplication:application
+                        didFinishLaunchingWithOptions:launchOptions
+                                               appkey:@"ilingnet#progressmanage"
+                                         apnsCertName:@"huanxinDevePush"
+                                          otherConfig:@{@"httpsOnly":[NSNumber numberWithBool:NO], kSDKConfigEnableConsoleLogger:[NSNumber numberWithBool:YES],@"easeSandBox":[NSNumber numberWithBool:YES]}];
+    if (!error) {
+        NSLog(@"初始化成功");
+        [[EMClient sharedClient].options setIsAutoLogin:YES];
+    }
+    //iOS8以上 注册APNS
+    if ([application respondsToSelector:@selector(registerForRemoteNotifications)]) {
+        [application registerForRemoteNotifications];
+        UIUserNotificationType notificationTypes = UIUserNotificationTypeBadge |
+        UIUserNotificationTypeSound |
+        UIUserNotificationTypeAlert;
+        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:notificationTypes categories:nil];
+        [application registerUserNotificationSettings:settings];
+    }
+    else{
+        UIRemoteNotificationType notificationTypes = UIRemoteNotificationTypeBadge |
+        UIRemoteNotificationTypeSound |
+        UIRemoteNotificationTypeAlert;
+        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:notificationTypes];
+    }
+    
+    error = [[EMClient sharedClient] loginWithUsername:@"18733333333" password:@"111111"];
+        if (!error) {
+            NSLog(@"登陆成功");
+            [[EMClient sharedClient] setApnsNickname:@"推送昵称18711111111"];
+        }else{
+            NSLog(@"登陆失败");
+            
+        }
+    BOOL isAutoLogin = [EMClient sharedClient].isAutoLogin;
+    if (isAutoLogin){
+        [[NSNotificationCenter defaultCenter] postNotificationName:KNOTIFICATION_LOGINCHANGE object:@YES];
+    }
+    else
+    {
+        [[NSNotificationCenter defaultCenter] postNotificationName:KNOTIFICATION_LOGINCHANGE object:@NO];
+    }
+    [[EMClient sharedClient] addDelegate:self delegateQueue:nil];
+    [[EMClient sharedClient].chatManager addDelegate:self delegateQueue:nil];
+
+    return YES;
+}
+- (void)setRootVC{
+    self.window.rootViewController = nil;
+    self.viewController = nil;
+    [self setupViewControllers];
+    [self.window setRootViewController:self.viewController];
+    [self.window makeKeyAndVisible];
+}
+
+- (void)setLoginRoot{
+    LoginViewController* vc = [[LoginViewController alloc] init];
+    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:vc];
+}
+- (void)setupViewControllers {
+    LingXinViewController *lxViewController = [[LingXinViewController alloc] init];
+    UIViewController *lxNavigationController = [[UINavigationController alloc]
+                                                initWithRootViewController:lxViewController];
+    
+    SalesViewController *xsViewController = [[SalesViewController alloc] init];
+    UIViewController *xsNavigationController = [[UINavigationController alloc]
+                                                   initWithRootViewController:xsViewController];
+    
+    CustomerViewController *khViewController = [[CustomerViewController alloc] init];
+    UIViewController *skhNavigationController = [[UINavigationController alloc]
+                                                    initWithRootViewController:khViewController];
+    
+    SelfViewController *wViewController = [[SelfViewController alloc] init];
+    UIViewController *wNavigationController = [[UINavigationController alloc]
+                                                initWithRootViewController:wViewController];
+    
+    RDVTabBarController *tabBarController = [[RDVTabBarController alloc] init];
+    [tabBarController setViewControllers:@[lxNavigationController,xsNavigationController, skhNavigationController,wNavigationController]];
+    self.viewController = tabBarController;
+    
+    [self customizeTabBarForController:tabBarController];
+}
+
+- (void)customizeTabBarForController:(RDVTabBarController *)tabBarController {
+    UIImage *finishedImage = [UIImage imageNamed:@"tabbar_selected_background"];
+    UIImage *unfinishedImage = [UIImage imageNamed:@"tabbar_normal_background"];
+    NSArray *tabBarItemImages = @[@"凌信", @"销售",@"客户",@"我"];
+    
+    NSInteger index = 0;
+    for (RDVTabBarItem *item in [[tabBarController tabBar] items]) {
+        [item setBackgroundSelectedImage:finishedImage withUnselectedImage:unfinishedImage];
+        UIImage *selectedimage = [UIImage imageNamed:[NSString stringWithFormat:@"%@-选中",
+                                                      [tabBarItemImages objectAtIndex:index]]];
+        UIImage *unselectedimage = [UIImage imageNamed:[NSString stringWithFormat:@"%@",
+                                                        [tabBarItemImages objectAtIndex:index]]];
+        [item setFinishedSelectedImage:selectedimage withFinishedUnselectedImage:unselectedimage];
+        
+        index++;
+    }
+}
+
+- (void)customizeInterface {
+    UINavigationBar *navigationBarAppearance = [UINavigationBar appearance];
+    
+    UIImage *backgroundImage = nil;
+    NSDictionary *textAttributes = nil;
+    
+    if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1) {
+        backgroundImage = [UIImage imageNamed:@"navigationbar_background_tall"];
+        
+        textAttributes = @{
+                           NSFontAttributeName: [UIFont boldSystemFontOfSize:18],
+                           NSForegroundColorAttributeName: [UIColor blackColor],
+                           };
+    } else {
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
+        backgroundImage = [UIImage imageNamed:@"navigationbar_background"];
+        
+        textAttributes = @{
+                           UITextAttributeFont: [UIFont boldSystemFontOfSize:18],
+                           UITextAttributeTextColor: [UIColor blackColor],
+                           UITextAttributeTextShadowColor: [UIColor clearColor],
+                           UITextAttributeTextShadowOffset: [NSValue valueWithUIOffset:UIOffsetZero],
+                           };
+#endif
+    }
+    
+    [navigationBarAppearance setBackgroundImage:backgroundImage
+                                  forBarMetrics:UIBarMetricsDefault];
+    [navigationBarAppearance setTitleTextAttributes:textAttributes];
+}
+// 将得到的deviceToken传给SDK
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken{
+    [[EMClient sharedClient] bindDeviceToken:deviceToken];
+}
+
+// 注册deviceToken失败
+- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error{
+    NSLog(@"error -- %@",error);
+}
+- (void)applicationWillResignActive:(UIApplication *)application {
+    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
+    // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+}
+
+
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+   [[EMClient sharedClient] applicationDidEnterBackground:application];
+}
+
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    [[EMClient sharedClient] applicationWillEnterForeground:application];
+}
+
+
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+}
+
+
+- (void)applicationWillTerminate:(UIApplication *)application {
+    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+
+
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
+{
+     [[EaseSDKHelper shareHelper] hyphenateApplication:application didReceiveRemoteNotification:userInfo];
+//    [self easemobApplication:application didReceiveRemoteNotification:userInfo];
+}
+
+- (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification
+{
+    
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler
+{
+    NSDictionary *userInfo = notification.request.content.userInfo;
+    [[EaseSDKHelper shareHelper] hyphenateApplication:[UIApplication sharedApplication] didReceiveRemoteNotification:userInfo];
+    completionHandler(UNNotificationPresentationOptionAlert);
+//    [self easemobApplication:[UIApplication sharedApplication] didReceiveRemoteNotification:userInfo];
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler
+{
+    
+    completionHandler();
+}
+
+/*!
+ *  当前登录账号在其它设备登录时会接收到该回调
+ */
+- (void)userAccountDidLoginFromOtherDevice{
+//    UIAlertView* al = [[UIAlertView alloc]initWithTitle:@"提示" message:@"您的账号在其他设备登录，您的密码可能已经泄露，可以重新登录或者修改密码" delegate:self cancelButtonTitle:@"确定" otherButtonTitles: nil];
+//    [al show];
+}
+/*!
+ *  当前登录账号已经被从服务器端删除时会收到该回调
+ */
+- (void)userAccountDidRemoveFromServer{
+    
+}
+/*!
+ *  SDK连接服务器的状态变化时会接收到该回调
+ *
+ *  有以下几种情况，会引起该方法的调用：
+ *  1. 登录成功后，手机无法上网时，会调用该回调
+ *  2. 登录成功后，网络状态变化时，会调用该回调
+ *
+ *  @param aConnectionState 当前状态
+ */
+- (void)connectionStateDidChange:(EMConnectionState)aConnectionState{
+    NSLog(@"aConnectionState = %d",aConnectionState);
+    if (aConnectionState == EMConnectionDisconnected) {
+     EMError *error = [[EMClient sharedClient] loginWithUsername:@"18733333333" password:@"111111"];
+        if (!error) {
+            NSLog(@"登陆成功");
+            [[EMClient sharedClient] setApnsNickname:@"推送昵称18733333333"];
+        }else{
+            NSLog(@"登陆失败");
+            
+        }
+    }
+    
+}
+/*!
+ *  自动登录返回结果
+ *
+ *  @param error 错误信息
+ */
+
+- (void)autoLoginDidCompleteWithError:(EMError *)error{
+    NSLog(@"自动登录返回结果:%@",error);
+}
+- (void)cmdMessagesDidReceive:(NSArray *)aCmdMessages{
+    for(EMMessage *message in aCmdMessages){
+        UIApplicationState state = [[UIApplication sharedApplication] applicationState];
+        switch (state) {
+            case UIApplicationStateActive:
+                [self playSoundAndVibration];
+                break;
+            case UIApplicationStateInactive:
+                [self playSoundAndVibration];
+                break;
+            case UIApplicationStateBackground:
+                [self showNotificationWithMessage:message];
+                break;
+            default:
+                break;
+        }
+    }
+
+}
+- (void)messagesDidReceive:(NSArray *)aMessages{
+    NSLog(@"接受消息：%ld条",aMessages.count);
+    
+    for(EMMessage *message in aMessages){
+        UIApplicationState state = [[UIApplication sharedApplication] applicationState];
+        switch (state) {
+            case UIApplicationStateActive:
+                [self playSoundAndVibration];
+                break;
+            case UIApplicationStateInactive:
+                [self playSoundAndVibration];
+                break;
+            case UIApplicationStateBackground:
+                [self showNotificationWithMessage:message];
+                break;
+            default:
+                break;
+        }
+    }
+    
+}
+- (void)playSoundAndVibration{
+    NSTimeInterval timeInterval = [[NSDate date]
+                                   timeIntervalSinceDate:self.lastPlaySoundDate];
+    if (timeInterval < kDefaultPlaySoundInterval) {
+        //如果距离上次响铃和震动时间太短, 则跳过响铃
+        NSLog(@"skip ringing & vibration %@, %@", [NSDate date], self.lastPlaySoundDate);
+        return;
+    }
+    
+    //保存最后一次响铃时间
+    self.lastPlaySoundDate = [NSDate date];
+    
+    // 收到消息时，播放音频
+    [[EMCDDeviceManager sharedInstance] playNewMessageSound];
+    // 收到消息时，震动
+    [[EMCDDeviceManager sharedInstance] playVibration];
+}
+
+- (void)showNotificationWithMessage:(EMMessage *)message
+{
+//    EMPushOptions *options = [[EMClient sharedClient] pushOptions];
+    
+    NSString *alertBody = nil;
+//    if (options.displayStyle == EMPushDisplayStyleMessageSummary) {
+        EMMessageBody *messageBody = message.body;
+        NSString *messageStr = nil;
+        switch (messageBody.type) {
+            case EMMessageBodyTypeText:
+            {
+                messageStr = ((EMTextMessageBody *)messageBody).text;
+            }
+                break;
+            case EMMessageBodyTypeImage:
+            {
+                messageStr = NSLocalizedString(@"message.image", @"Image");
+            }
+                break;
+            case EMMessageBodyTypeLocation:
+            {
+                messageStr = NSLocalizedString(@"message.location", @"Location");
+            }
+                break;
+            case EMMessageBodyTypeVoice:
+            {
+                messageStr = NSLocalizedString(@"message.voice", @"Voice");
+            }
+                break;
+            case EMMessageBodyTypeVideo:{
+                messageStr = NSLocalizedString(@"message.video", @"Video");
+            }
+                break;
+            default:
+                break;
+                
+//            alertBody = [NSString stringWithFormat:@"%@:%@", message.ext[@"name"], messageStr];
+                alertBody = [NSString stringWithFormat:@"%@", messageStr];
+
+
+        }
+//    }else{
+//        alertBody = NSLocalizedString(@"receiveMessage", @"you have a new message");
+//    }
+    alertBody = [NSString stringWithFormat:@"%@", messageStr];
+    //发送本地推送
+    UILocalNotification *notification = [[UILocalNotification alloc] init];
+    notification.fireDate = [NSDate date]; //触发通知的时间
+    notification.timeZone = [NSTimeZone defaultTimeZone];
+    NSTimeInterval timeInterval = [[NSDate date] timeIntervalSinceDate:self.lastPlaySoundDate];
+    if (timeInterval < kDefaultPlaySoundInterval) {
+        NSLog(@"skip ringing & vibration %@, %@", [NSDate date], self.lastPlaySoundDate);
+    } else {
+        notification.soundName = UILocalNotificationDefaultSoundName;
+        self.lastPlaySoundDate = [NSDate date];
+    }
+    
+    NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+    [userInfo setObject:[NSNumber numberWithInt:message.chatType] forKey:kMessageType];
+    [userInfo setObject:message.conversationId forKey:kConversationChatter];
+    notification.userInfo = userInfo;
+    notification.alertBody = alertBody;
+    
+
+    
+    
+    //发送通知
+    [[UIApplication sharedApplication] scheduleLocalNotification:notification];
+}
+
+- (void)didReceiveLocalNotification:(UILocalNotification *)notification
+{
+    NSDictionary *userInfo = notification.userInfo;
+}
+
+//高德地图SDK
+- (void)configureAPIKey {
+    [AMapServices sharedServices].apiKey = (NSString *)GDAPIKey;
+}
+
+@end

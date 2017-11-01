@@ -1,0 +1,20 @@
+//
+//  CustomerModel.h
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/8.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface CustomerModel : NSObject
+@property(nonatomic,copy)NSString* id;
+@property(nonatomic,copy)NSString* custName;
+@property(nonatomic,copy)NSString* contactPer;
+@property(nonatomic,copy)NSString* custType;
+@property(nonatomic,copy)NSString* vip;
+@property(nonatomic,copy)NSString* phone;
+@property(nonatomic,copy)NSString* custLevel;
+
+@end

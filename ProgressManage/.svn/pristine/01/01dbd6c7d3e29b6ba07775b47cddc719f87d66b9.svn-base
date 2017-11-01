@@ -1,0 +1,138 @@
+//
+//  FootprintDetailViewController.m
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/26.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "FootprintDetailViewController.h"
+
+@interface FootprintDetailViewController ()
+@property(nonatomic,strong)UIView* bgView;
+@property(nonatomic,strong)UIScrollView * scrollView;
+@end
+
+@implementation FootprintDetailViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    self.title = @"足迹分布";
+    
+    [self makeView];
+}
+
+- (void)makeView{
+    self.bgView = [MyController viewWithFrame:self.view.frame];
+    self.bgView.backgroundColor = [UIColor whiteColor];
+    //将图层的边框设置为圆脚
+    self.bgView.layer.cornerRadius = 6;
+    self.bgView.layer.masksToBounds = YES;
+    [self.bgView setContentMode:UIViewContentModeScaleAspectFill];
+    self.bgView.clipsToBounds = YES;
+    [self.view addSubview:self.bgView];
+    
+    [self.bgView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(15);
+        make.right.mas_equalTo(-15);
+        make.top.mas_equalTo(15 + [MyController isIOS7]);
+        make.height.mas_offset([MyController getScreenHeight] - 30 - [MyController isIOS7]);
+    }];
+    
+    [AMapServices sharedServices].enableHTTPS = YES;
+    MAMapView *_mapView = [[MAMapView alloc] initWithFrame:self.view.frame];
+    _mapView.showsUserLocation = YES;
+    _mapView.userTrackingMode = MAUserTrackingModeFollow;
+    _mapView.showsCompass = NO;
+    _mapView.showsScale = NO;
+    [_mapView setZoomLevel:15.6 animated:YES];
+    [self.bgView addSubview:_mapView];
+    
+    [_mapView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(15);
+        make.right.mas_equalTo(-15);
+        make.top.mas_equalTo(15);
+        make.bottom.mas_equalTo(self.bgView.mas_bottom).mas_offset(-105);
+    }];
+    
+    float bgH = [MyController getScreenHeight] - 30 - [MyController isIOS7];
+    float bgW = [MyController getScreenWidth] - 30;
+    
+    self.scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(15, bgH - 105, bgW - 30, 105)];
+    //给scrollview设置一个真正的大小，其实就是contentView的大小
+    self.scrollView.contentSize = CGSizeMake(bgW * ceil(((float)self.nameArr.count / 4)), 105);
+    //设置偏移量
+    self.scrollView.contentOffset = CGPointMake(0, 0);
+    //分页
+    self.scrollView.pagingEnabled = YES;
+    //设置额外空间 上 左 下 右`
+    self.scrollView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
+    //锁定滑动方向
+    self.scrollView.directionalLockEnabled = YES;
+    //反弹效果
+    self.scrollView.bounces = YES;
+    //总是水平方向保持反弹效果
+    self.scrollView.alwaysBounceHorizontal = YES;
+    //总是垂直方向保持反弹效果
+    self.scrollView.alwaysBounceVertical = NO;
+    //开启滑动
+    self.scrollView.scrollEnabled = YES;
+    //显示水平状态条
+    self.scrollView.showsHorizontalScrollIndicator = NO;
+    //显示垂直状态条
+    self.scrollView.showsVerticalScrollIndicator = NO;
+    //状态条类型
+    self.scrollView.indicatorStyle = UIScrollViewIndicatorStyleWhite;
+    //减速速率
+    self.scrollView.decelerationRate = 0.5;
+    [self.bgView addSubview: self.scrollView];
+
+    
+    float imageWidth = ([MyController getScreenWidth] - 15*3 - 60)/4;
+
+    for (int i = 0; i < self.nameArr.count; i++) {
+        UIView* temView = [MyController viewWithFrame:CGRectMake(((imageWidth + 15) * i), 15 , imageWidth, imageWidth)];
+        temView.backgroundColor = [MyController randomColor];//[MyController colorWithHexString:@"ff7854"];
+        temView.layer.cornerRadius = imageWidth/2;
+        temView.layer.masksToBounds = YES;
+        [temView setContentMode:UIViewContentModeScaleAspectFill];
+        temView.clipsToBounds = YES;
+        [self.scrollView addSubview:temView];
+        
+        UILabel* temLable = [MyController createLabelWithFrame:temView.frame Font:18 Text:[self.nameArr[i] substringToIndex:1]];
+        temLable.textColor = [UIColor whiteColor];
+        temLable.textAlignment = NSTextAlignmentCenter;
+        [self.scrollView addSubview:temLable];
+        
+        UILabel* titleLable = [MyController createLabelWithFrame:CGRectMake(temLable.frame.origin.x, CGRectGetMaxY(temLable.frame), temLable.frame.size.width, 20) Font:14 Text:self.nameArr[i]];
+        titleLable.textColor = [MyController colorWithHexString:TEXTCOLOR];
+        titleLable.textAlignment = NSTextAlignmentCenter;
+        [self.scrollView addSubview:titleLable];
+        
+        UIButton* temBtn = [MyController createButtonWithFrame:CGRectMake(temView.frame.origin.x, temView.frame.origin.y, temView.frame.size.width, 105) ImageName:nil Target:self Action:@selector(temBtnClick:) Title:nil];
+        temBtn.tag = 100 + i;
+        [self.scrollView addSubview:temBtn];
+    }
+}
+
+- (void)temBtnClick:(UIButton*)btn{
+    NSLog(@"---%ld",btn.tag - 100);
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

@@ -1,0 +1,62 @@
+//
+//  PrefixHeader.pch
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/3.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+#endif /* PrefixHeader_pch */
+
+#ifdef __OBJC__
+#define DEFAULTCOLOR @"f9fafb"
+#define LINECOLOR @"eeeff2"
+#define TEXTCOLOR @"81889d"
+#define ROADCOLOR @"4ddc26"
+
+#define MAPKEY @"d48a4e19d3e04be694d24798605803dd"
+//分栏
+#import "RDVTabBarController.h"
+#import "RDVTabBarItem.h"
+#import "Masonry.h"
+#import <IQKeyboardManager.h>
+#import <IQKeyboardReturnKeyHandler.h>
+#import <IQUIView+IQKeyboardToolbar.h>
+#import "MJRefresh.h"
+#import "AFNetworking.h"
+#import "requestURL.h"
+#import "requestService.h"
+#import <SDWebImage/UIImageView+WebCache.h>
+#import "HMSegmentedControl.h"
+#import "MJExtension.h"
+#import "MyController.h"
+#import "RegularExpressions.h"
+#import "HUD.h"
+#import "WJDropdownMenu.h"
+#import "XRQRequestClient.h"
+#import "AppDelegate.h"
+#import "BRPickerView.h"
+#import "JPUSHService.h"
+#import "ImagePickerSheetViewController.h"
+#import "LFAssetManager.h"
+#import "LFImagePickerController.h"
+#import "MHDatePicker.h"
+#ifdef NSFoundationVersionNumber_iOS_9_x_Max
+#import <UserNotifications/UserNotifications.h>
+#endif
+#import "Masonry/View+MASAdditions.h"
+#import "UITableViewCell+HYBMasonryAutoCellHeight.h"
+#import "CycleScrollView.h"
+#import "MWPhotoBrowser.h"
+#import <MAMapKit/MAMapKit.h>
+#import <AMapSearchKit/AMapSearchKit.h>
+#import <AMapFoundationKit/AMapFoundationKit.h>
+#import <AMapLocationKit/AMapLocationKit.h>
+#import "GemHeader.h"
+
+#endif

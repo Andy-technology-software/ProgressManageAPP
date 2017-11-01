@@ -1,0 +1,255 @@
+//
+//  requestService.h
+//  WhereAreYou
+//
+//  Created by lingnet on 2017/7/5.
+//  Copyright © 2017年 徐仁强. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+#import "XRQRequestClient.h"
+@interface requestService : NSObject
+/********************************************************************************销售过程接口**********************************************************************************************/
+
+
+
+
+
+
+/**
+ 14.日报列表
+ 
+ @param userId 当前用户 id
+ @param time 选择时间日期
+ @param _id 人员 Id
+ @param token 时间戳
+ @param num 数量
+ @param pnum 页码
+ @param cname 公司名
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postdailyListWithUserId:(NSString*)userId time:(NSString*)time id:(NSString*)_id token:(NSString*)token num:(NSString*)num pnum:(NSString*)pnum cname:(NSString*)cname complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+
+
+/**
+ 12.日报
+ 
+ @param userId 当前用户 id
+ @param content 日报内容
+ @param loaction 地址
+ @param sendMessage 是否发送消息 0 不发，1 发送
+ @param sendPers 添加的多个用户 Id
+ @param time 日报填写时间
+ @param token 时间戳
+ @param cname 公司名
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postdailyListWithUserId:(NSString*)userId content:(NSString*)content loaction:(NSString*)loaction sendMessage:(NSString*)sendMessage sendPers:(NSString*)sendPers token:(NSString*)token time:(NSString*)time cname:(NSString*)cname complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+/***********************************************************************销售过程接口*****客户customer!XXXX.action*******************************************************************/
+
+
+
+
+
+
+/**
+ 1.客户列表
+ @param userId 当前用户 id
+ @param customerType 客户分类;空和不限就是全部
+ @param followState 跟进状态;空和不限就是全部
+ @param customerLevel 客户级别;空和不限就是全部
+ @param searchName 模糊查询条件(名称、负责员工)
+ @param token 时间戳
+ @param num 每页数量
+ @param pnum 页码
+ @param cname 组织名
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postCustomerListWithUserId:(NSString*)userId customerType:(NSString*)customerType followState:(NSString*)followState customerLevel:(NSString*)customerLevel searchName:(NSString*)searchName token:(NSString*)token num:(NSString*)num pnum:(NSString*)pnum cname:(NSString*)cname complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+
+
+/**
+ 2.客户分类
+ @param token 时间戳
+ @param cname 组织名
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postGetCustomerInfoWithToken:(NSString*)token cname:(NSString*)cname complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+
+
+/**
+ 3.客户详情
+ @param userId 用户 ID
+ @param _id 客户 ID
+ @param token 时间戳
+ @param cname 组织名
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postCustomerDetailWithUserId:(NSString*)userId id:(NSString*)_id token:(NSString*)token cname:(NSString*)cname complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+
+
+/**
+ 4.客户新增
+ @param userId 用户 ID
+ @param customerType 客户类型
+ @param token 时间戳
+ @param customerLevel 客户级别
+ @param contact 联系方式
+ @param customerName 客户名称
+ @param des 备注
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postCreateCustomerWithUserId:(NSString*)userId customerType:(NSString*)customerType token:(NSString*)token customerLevel:(NSString*)customerLevel contact:(NSString*)contact customerName:(NSString*)customerName des:(NSString*)des complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+
+
+/**
+ 5.客户筛选(接口多余—直接在客户列表筛选，详情建客户 列表)
+ @param userId 用户 ID
+ @param customerName 客户名称
+ @param token 时间戳
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postSearchCustomerWithUserId:(NSString*)userId customerName:(NSString*)customerName token:(NSString*)token complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+
+
+/**
+ 6.客户删除
+ @param userId 用户 ID
+ @param cname 公司名
+ @param token 时间戳
+ @param _id 客户id
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postDeleteCustomerWithUserId:(NSString*)userId cname:(NSString*)cname token:(NSString*)token id:(NSString*)_id complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+
+
+/**
+ 获取token
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postCreateTokenWithUserId:(NSString*)userId complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+/***********************************************************************销售过程接口*****用户信息*******************************************************************/
+
+
+
+/**
+ 1.用户申请试用(调在线管理平台接口)
+ @param userName 用户名
+ @param companyName 企业名
+ @param contactPhone 联系电话
+ @param email 邮箱
+ @param recommender 推荐人
+ @param token 时间戳
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postApplyWithUserName:(NSString*)userName companyName:(NSString*)companyName contactPhone:(NSString*)contactPhone email:(NSString*)email recommender:(NSString*)recommender token:(NSString*)token complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+
+/**
+ 2.用户登录
+ @param userName 用户名
+ @param cname 组织名
+ @param password 密码
+ @param token 时间戳
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postLoginWithUserName:(NSString*)userName cname:(NSString*)cname password:(NSString*)password token:(NSString*)token complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+
+/**
+ 3.用户资料修改
+ @param userId 用户id
+ @param nickName 姓名
+ @param email 邮箱
+ @param token 时间戳
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postInfoUpdateWithUserId:(NSString*)userId nickName:(NSString*)nickName email:(NSString*)email token:(NSString*)token complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+
+/**
+ 4.修改密码
+ @param userId 用户id
+ @param oldPassword 原密码
+ @param newPassword 新密码
+ @param token 时间戳
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postChangePassWithUserId:(NSString*)userId oldPassword:(NSString*)oldPassword newPassword:(NSString*)newPassword token:(NSString*)token complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+
+/**
+ 5.获取签到次数（sign!XXX.action）
+ @param userId 用户id
+ @param token 时间戳
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postGetSignNumWithUserId:(NSString*)userId token:(NSString*)token complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+
+
+@end

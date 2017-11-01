@@ -1,0 +1,20 @@
+//
+//  SalesModel.h
+//  ProgressManage
+//
+//  Created by Gem on 2017/5/8.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface SalesModel : NSObject
+@property (nonatomic,copy) NSString *title;
+@property (nonatomic,copy) NSString *time;
+@property (nonatomic,assign) float percent;
+@property (nonatomic,copy) NSString *state;
+@property (nonatomic,copy) NSString *customer;
+@property (nonatomic,copy) NSString *money;
+@property (nonatomic,copy) NSString *flag;
+
+@end

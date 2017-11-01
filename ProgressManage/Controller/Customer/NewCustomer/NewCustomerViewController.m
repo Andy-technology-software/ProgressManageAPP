@@ -1,0 +1,251 @@
+//
+//  NewCustomerViewController.m
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/25.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "NewCustomerViewController.h"
+
+#import "NewCustomerModel.h"
+
+#import "NewCustomerTableViewCell.h"
+
+#import "NewCustomer1TableViewCell.h"
+@interface NewCustomerViewController ()<UITableViewDataSource,UITableViewDelegate,NewCustomerTableViewCellDelegate,AdvancedExpandableTableViewDelegate>{
+    UITableView* _tableView;
+    CGFloat textCellHeight;
+}
+@property(nonatomic,strong)NSMutableArray* dataSourceArr;
+
+@property(nonatomic,copy)NSString* _token;
+@property(nonatomic,copy)NSString* _errorCode;
+
+@end
+
+@implementation NewCustomerViewController
+
+- (void)viewWillAppear:(BOOL)animated{
+    [[self rdv_tabBarController] setTabBarHidden:YES animated:YES];
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.dataSourceArr = [[NSMutableArray alloc] init];
+    NewCustomerModel* model = [[NewCustomerModel alloc] init];
+    model.name = self.name;
+    model.type = self.type;
+    model.jibie = self.jibie;
+    model.phone = self._tel;
+    model.lxr = self._lxr;
+    model.remark = self.remark;
+    [self.dataSourceArr addObject:model];
+    
+    [self createTableView];
+    
+    [self makeSendView];
+}
+
+- (void)makeSendView{
+    UIButton* sendBtn = [MyController createButtonWithFrame:CGRectMake(0, CGRectGetMaxY(_tableView.frame), [MyController getScreenWidth], 50) ImageName:nil Target:self Action:@selector(sendBtnClick) Title:@"保存"];
+    [sendBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [sendBtn setBackgroundColor:[MyController colorWithHexString:@"4c89f0"]];
+    [self.view addSubview:sendBtn];
+}
+- (void)sendBtnClick{
+    NSLog(@"提交");
+    
+    if (![MyController returnStr:self.name].length) {
+        [HUD warning:@"请填写客户名称"];
+        return;
+    }else if (![MyController returnStr:self._customerType].length && ![self.type isEqualToString:@"类型不限"]) {
+        [HUD warning:@"请选择客户类型"];
+        return;
+    }else if (![MyController returnStr:self._customerLevel].length && ![self.jibie isEqualToString:@"级别不限"]) {
+        [HUD warning:@"请选择客户级别"];
+        return;
+    }else if (![MyController returnStr:self._lxr].length) {
+        [HUD warning:@"请填写联系人"];
+        return;
+    }else if (![MyController returnStr:self._tel].length) {
+        [HUD warning:@"请填写联系方式"];
+        return;
+    }
+    NSLog(@"%@--%@",self._lxr,self._tel);
+    [HUD loading];
+    [requestService postCreateTokenWithUserId:[MyController getUserid] cname:[MyController getCName] complate:^(id responseObject) {
+        if ([responseObject[@"result"] intValue]) {
+            NSDictionary* souDic = [MyController dictionaryWithJsonString:responseObject[@"data"]];
+            self._token = souDic[@"token"];
+            self._errorCode = souDic[@"errorCode"];
+            
+            [requestService postCreateCustomerWithUserId:[MyController getUserid] id:[MyController returnStr:self._khId] contacts:[MyController returnStr:self._lxr] customerType:self._customerType token:self._token customerLevel:self._customerLevel contact:[MyController returnStr:self._tel] customerName:[MyController returnStr:self.name] des:[MyController returnStr:self.remark] complate:^(id responseObject) {
+                if ([responseObject[@"result"] intValue]) {
+                    [HUD success:responseObject[@"data"]];
+                    [self.navigationController popViewControllerAnimated:YES];
+                }
+            } failure:^(NSError *error) {
+                
+            }];
+            
+        }
+
+    } failure:^(NSError *error) {
+        
+    }];
+    
+}
+#pragma mark - 初始化tableView
+- (void)createTableView{
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, [MyController isIOS7], self.view.frame.size.width, [MyController getScreenHeight] - [MyController isIOS7] - 50) style:UITableViewStylePlain];
+    _tableView.dataSource = self;
+    _tableView.delegate = self;
+    _tableView.backgroundColor = [UIColor clearColor];
+    //分割线类型
+    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.showsVerticalScrollIndicator = NO;
+    [self.view addSubview:_tableView];
+}
+
+#pragma mark - tableView行数
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return 1;
+}
+
+#pragma mark - 自定义tableView
+- (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (0 == indexPath.section) {
+        NewCustomerTableViewCell *celll = [[NewCustomerTableViewCell alloc] init];
+        celll.selectionStyle = UITableViewCellSelectionStyleNone;
+        NewCustomerModel* model = self.dataSourceArr[indexPath.row];
+        celll.NewCustomerTableViewCellDelegate = self;
+        [celll configCellWithModel:model];
+        return celll;
+    }
+    
+    NewCustomer1TableViewCell *textCell = [tableView advancedExpandableTextCellWithIdNewCus:@"NewCustomer1TableViewCell"];
+    textCell.placeholder = @"请填写";
+    textCell.selectionStyle = UITableViewCellSelectionStyleNone;
+    textCell.maxCharacter = 1000;
+    
+    return textCell;
+}
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return 2;
+}
+#pragma mark - tableView行高
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (0 == indexPath.section) {
+        NewCustomerModel *model = nil;
+        if (indexPath.row < self.dataSourceArr.count) {
+            model = [self.dataSourceArr objectAtIndex:indexPath.row];
+        }
+        
+        return [NewCustomerTableViewCell hyb_heightForTableView:tableView config:^(UITableViewCell *sourceCell) {
+            NewCustomerTableViewCell *cell = (NewCustomerTableViewCell *)sourceCell;
+            [cell configCellWithModel:model];
+        }];
+    }
+    return MAX(200, textCellHeight + 20);
+}
+
+#pragma mark - 这是事由cell代理
+- (void)tableView:(UITableView *)tableView updatedHeight:(CGFloat)height atIndexPath:(NSIndexPath *)indexPath{
+    textCellHeight = height;
+}
+- (void)tableView:(UITableView *)tableView updatedText:(NSString *)text atIndexPath:(NSIndexPath *)indexPath{
+    NSLog(@"debug : updatedText\n%@", text);
+    NewCustomerModel* model = [self.dataSourceArr lastObject];
+    model.remark = text;
+    self.remark = text;
+    
+}
+
+/**
+ cell返回代理
+
+ @param phone 返回联系方式
+ */
+- (void)sendBackPhone:(NSString *)phone{
+    NewCustomerModel* model = [self.dataSourceArr lastObject];
+    model.phone = phone;
+    NSLog(@"%@",model.phone);
+    self._tel = phone;
+}
+
+- (void)sendBackLXR:(NSString *)lxr {
+    NewCustomerModel* model = [self.dataSourceArr lastObject];
+    model.lxr = lxr;
+    NSLog(@"%@",model.lxr);
+    self._lxr = lxr;
+}
+
+/**
+ cell返回代理
+ 
+ @param name 返回名字
+ */
+- (void)sendBackName:(NSString *)name {
+    NewCustomerModel* model = [self.dataSourceArr lastObject];
+    model.name = name;
+    self.name = name;
+}
+
+
+/**
+ cell返回级别代理
+ */
+- (void)sendBackJibie {
+    NewCustomerModel* model = [self.dataSourceArr lastObject];
+    [BRStringPickerView showStringPickerWithTitle:@"请选择客户级别" dataSource:self.customerLevelArr defaultSelValue:[self.customerLevelArr firstObject] isAutoSelect:NO resultBlock:^(id selectValue) {
+        for (int i = 0; i < self.customerLevelArr.count; i++) {
+            if ([selectValue isEqualToString:self.customerLevelArr[i]]) {
+                self._customerLevel = self.customerLevelIdArr[i];
+                model.jibie = selectValue;
+                self.jibie = selectValue;
+                break;
+            }
+        }
+        [_tableView reloadData];
+    }];
+}
+
+/**
+ cell返回类型代理
+ */
+- (void)sendBackType{
+    NewCustomerModel* model = [self.dataSourceArr lastObject];
+    [BRStringPickerView showStringPickerWithTitle:@"请选择客户类型" dataSource:self.customerTypeArr defaultSelValue:[self.customerTypeArr firstObject] isAutoSelect:NO resultBlock:^(id selectValue) {
+        for (int i = 0; i < self.customerTypeArr.count; i++) {
+            if ([selectValue isEqualToString:self.customerTypeArr[i]]) {
+                self._customerType = self.customerTypeIdArr[i];
+                model.type = selectValue;
+                self.type = selectValue;
+                break;
+            }
+        }
+        NSLog(@"%@",selectValue);
+        [_tableView reloadData];
+    }];
+    
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

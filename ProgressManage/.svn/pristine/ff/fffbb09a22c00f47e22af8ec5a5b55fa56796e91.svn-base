@@ -1,0 +1,217 @@
+//
+//  SalesTableViewCell.m
+//  ProgressManage
+//
+//  Created by Gem on 2017/5/8.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "SalesTableViewCell.h"
+
+@implementation SalesTableViewCell
+
+{
+    UIView *bgView;
+    UIView *point;
+    UIView *percentBg;
+    UIView *percent;
+    UILabel *title;
+    UILabel *time;
+    UILabel *custom;
+    UILabel *customname;
+    UILabel *money;
+    UILabel *moneyCount;
+    UILabel *state;
+
+ 
+}
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self createView];
+        self.backgroundColor = [UIColor clearColor];
+    }
+    return self;
+}
+- (void)createView{
+    bgView = [UIView new];
+    bgView.backgroundColor = [UIColor whiteColor];
+    bgView.layer.cornerRadius = 5;
+    bgView.clipsToBounds = YES;
+    [self addSubview:bgView];
+    
+    point = [[UIView alloc] init];
+    point.layer.cornerRadius = 3;
+    point.clipsToBounds = YES;
+    point.backgroundColor = [MyController colorWithHexString:@"3273f9"];
+    [bgView addSubview:point];
+    
+    title = [MyController createLabelWithFrame:CGRectZero Font:14 Text:@""];
+    title.lineBreakMode = NSLineBreakByTruncatingTail;
+    [bgView addSubview:title];
+    
+    time = [MyController createLabelWithFrame:CGRectZero Font:12 Text:@""];
+    time.textAlignment = NSTextAlignmentRight;
+    time.textColor = [MyController colorWithHexString:@"81889d"];
+    [bgView addSubview:time];
+    
+    percentBg = [UIView new];
+    percentBg.backgroundColor = [MyController colorWithHexString:@"ebecee"];
+    percentBg.layer.cornerRadius = 4;
+    percentBg.clipsToBounds = YES;
+    [bgView addSubview:percentBg];
+    
+    percent = [UIView new];
+    percent.backgroundColor = [MyController colorWithHexString:@"3273f9"];
+    percent.layer.cornerRadius = 4;
+    percent.clipsToBounds = YES;
+    [bgView addSubview:percent];
+
+    
+    state = [MyController createLabelWithFrame:CGRectZero Font:12 Text:@""];
+    state.textAlignment = NSTextAlignmentCenter;
+    state.textColor = [MyController colorWithHexString:@"3273f9"];
+    [bgView addSubview:state];
+    
+    custom = [MyController createLabelWithFrame:CGRectZero Font:12 Text:@"客户"];
+    custom.textColor = [MyController colorWithHexString:@"81889d"];
+    [bgView addSubview:custom];
+    
+    money = [MyController createLabelWithFrame:CGRectZero Font:12 Text:@"合同金额"];
+    money.textAlignment = NSTextAlignmentRight;
+    money.textColor = [MyController colorWithHexString:@"81889d"];
+    [bgView addSubview:money];
+
+    
+    customname = [MyController createLabelWithFrame:CGRectZero Font:16 Text:@""];
+    customname.textColor = [MyController colorWithHexString:@"3273f9"];
+    [bgView addSubview:customname];
+    
+    moneyCount = [MyController createLabelWithFrame:CGRectZero Font:16 Text:@""];
+    moneyCount.textAlignment = NSTextAlignmentRight;
+    moneyCount.textColor = [MyController colorWithHexString:@"3273f9"];
+    [bgView addSubview:moneyCount];
+  
+    
+}
+
+- (void)setModel:(SalesModel *)model{
+    
+    int padding = 10;
+    [bgView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(padding / 2);
+        make.left.mas_equalTo(0);
+        make.right.mas_equalTo(0);
+        make.bottom.mas_equalTo(-padding / 2);
+    }];
+    
+    [title mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(bgView.mas_top).offset(padding);
+        make.left.mas_equalTo(point.mas_right).mas_offset(padding);
+        make.right.mas_equalTo(time.mas_left).mas_offset(-padding);
+        make.height.mas_offset(20);
+    }];
+    
+    [point mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(bgView.mas_top).offset(padding * 1.5);
+        make.left.mas_equalTo(bgView.mas_left).mas_offset(padding);
+        make.width.mas_offset(6);
+        make.height.mas_offset(6);
+    }];
+    
+    [time mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(title.mas_right).mas_offset(padding);
+        make.right.mas_equalTo(bgView.mas_right).mas_offset(-padding);
+        make.bottom.mas_equalTo(title.mas_bottom);
+    }];
+    
+    [percentBg mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(title.mas_bottom).mas_offset(padding * 1.5);
+        make.left.mas_equalTo(point.mas_left);
+        make.height.mas_offset(8);
+    }];
+    
+   
+    
+    [state mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(title.mas_bottom).mas_offset(padding);
+        make.left.mas_equalTo(percentBg.mas_right).mas_offset(padding);
+        make.right.mas_equalTo(bgView.mas_right).mas_offset(-padding);
+        make.height.mas_offset(20);
+
+    }];
+   
+    [custom mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(state.mas_bottom).mas_offset(padding);
+        make.left.mas_equalTo(percentBg.mas_left);
+        make.right.mas_equalTo(money.mas_left).mas_offset(-padding);
+       
+    }];
+    
+    [money mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(state.mas_bottom).mas_offset(padding);
+        make.left.mas_equalTo(moneyCount.mas_left);
+        make.right.mas_equalTo(bgView.mas_right).mas_offset(-padding);
+        
+    }];
+    [customname mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(custom.mas_bottom).mas_offset(padding);
+        make.left.mas_equalTo(custom.mas_left);
+        make.right.mas_equalTo(moneyCount.mas_left).mas_offset(-padding);
+        
+    }];
+    
+    [moneyCount mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(money.mas_bottom).mas_offset(padding);
+        make.left.mas_equalTo(money.mas_left);
+        make.right.mas_equalTo(bgView.mas_right).mas_offset(-padding);
+        
+    }];
+    
+    [percent mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(title.mas_bottom).mas_offset(padding * 1.5);
+        make.left.mas_equalTo(point.mas_left);
+        make.height.mas_offset(8);
+        make.width.mas_equalTo(percentBg.mas_width).multipliedBy(model.percent);
+    }];
+    
+    title.text = model.title;
+    time.text = model.time;
+    state.text = model.state;
+    customname.text = model.customer;
+    moneyCount.text = model.money;
+}
+
+- (void)layoutSubviews{
+    [super layoutSubviews];
+    for (UIView *subView in self.subviews) {
+        if([subView isKindOfClass:NSClassFromString(@"UITableViewCellDeleteConfirmationView")]) {
+            // 拿到subView之后再获取子控件
+            // 因为上面删除按钮是第二个加的所以下标是1
+            UIView *deleteConfirmationView = subView.subviews[1];
+            //改背景颜色
+            deleteConfirmationView.backgroundColor = [UIColor whiteColor];
+            for (UIView *deleteView in deleteConfirmationView.subviews) {
+                NSLog(@"%@",deleteConfirmationView.subviews);
+                UIImageView *deleteImage = [[UIImageView alloc] init];
+                deleteImage.contentMode = UIViewContentModeScaleAspectFill;
+                deleteImage.image = [UIImage imageNamed:@"销售-编辑1"];
+                NSLog(@"%lf ,%lf",deleteView.frame.size.width,deleteView.frame.size.height);
+                deleteImage.frame = CGRectMake(11, 0, deleteView.frame.size.width + 20, deleteView.frame.size.height);
+                
+                [deleteView addSubview:deleteImage];
+            }
+            // 这里是右边的
+            UIView *shareConfirmationView = subView.subviews[0];
+            shareConfirmationView.backgroundColor = [UIColor whiteColor];
+            for (UIView *shareView in shareConfirmationView.subviews) {
+                UIImageView *shareImage = [[UIImageView alloc] init];
+                shareImage.contentMode = UIViewContentModeScaleAspectFill;
+                shareImage.image = [UIImage imageNamed:@"销售-删除1"];
+                shareImage.frame = CGRectMake(0, 0, shareView.frame.size.width + 12, shareView.frame.size.height);
+                [shareView addSubview:shareImage];
+            }
+        }
+    }
+}
+@end

@@ -1,0 +1,263 @@
+//
+//  AdjustAddViewController.m
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/11.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "AdjustAddViewController.h"
+
+#import "AdjustAddModel.h"
+
+#import "AdjustAddTableViewCell.h"
+@interface AdjustAddViewController ()<UITableViewDataSource,UITableViewDelegate,UITextFieldDelegate,AMapSearchDelegate,AMapLocationManagerDelegate>{
+    UITableView* _tableView;
+}
+@property(nonatomic,strong)NSMutableArray* dataSourceArr;
+
+@property(nonatomic,strong)UIView* bgHeaderView;
+@property(nonatomic,strong)UIView* whiteBgView;
+
+@property(nonatomic,strong)UITextField* sTextfield;
+
+@property(nonatomic,strong)AMapLocationManager* locationManager;
+@property(nonatomic,strong)AMapSearchAPI* search;
+
+@property(nonatomic,assign)CGFloat latitu;
+@property(nonatomic,assign)CGFloat longit;
+@property(nonatomic,copy)NSString* keyword;
+@end
+
+@implementation AdjustAddViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.title = @"地点调整";
+    [self createTableView];
+    [self makeLocat];
+    
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
+                                              initWithImage:[UIImage imageNamed:@""]
+                                              style:UIBarButtonItemStylePlain
+                                              target:self
+                                              action:@selector(rihgtBtnAction)];
+    self.navigationItem.rightBarButtonItem.title = @"确定";
+    
+}
+- (void)rihgtBtnAction{
+    NSLog(@"确定");
+    for (int i = 0; i < self.dataSourceArr.count; i++) {
+        AdjustAddModel* model = self.dataSourceArr[i];
+        if (model.isSelect) {
+            [self.navigationController popViewControllerAnimated:YES];
+            break;
+        }
+        if (i == self.dataSourceArr.count - 1) {
+            [HUD warning:@"请选择位置"];
+        }
+    }
+}
+
+/**
+ 定位一次
+ */
+- (void)makeLocat{
+    self.locationManager = [[AMapLocationManager alloc] init];
+    [self.locationManager setDelegate:self];
+    [self.locationManager startUpdatingLocation];
+}
+- (void)amapLocationManager:(AMapLocationManager *)manager didUpdateLocation:(CLLocation *)location{
+    //定位结果
+    NSLog(@"location:{lat:%f; lon:%f; accuracy:%f}", location.coordinate.latitude, location.coordinate.longitude, location.horizontalAccuracy);
+    self.latitu = location.coordinate.latitude;
+    self.longit = location.coordinate.longitude;
+    [self.locationManager stopUpdatingLocation];
+    [self makeSearch:@""];
+}
+#pragma mark - 初始化tableView
+- (void)createTableView{
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, [MyController isIOS7], self.view.frame.size.width, [MyController getScreenHeight] - [MyController isIOS7]) style:UITableViewStylePlain];
+    _tableView.dataSource = self;
+    _tableView.delegate = self;
+    _tableView.backgroundColor = [UIColor clearColor];
+    //分割线类型
+    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.showsVerticalScrollIndicator = NO;
+    [self.view addSubview:_tableView];
+}
+
+#pragma mark - tableView行数
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return self.dataSourceArr.count;
+}
+
+#pragma mark - tableVie点击cell
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    for (int i = 0 ; i < self.dataSourceArr.count; i++) {
+        AdjustAddModel* model = self.dataSourceArr[i];
+        if (i == indexPath.row) {
+            model.isSelect = YES;
+        }else{
+            model.isSelect = NO;
+        }
+        NSIndexPath *indexPath=[NSIndexPath indexPathForRow:i inSection:0];
+        [_tableView reloadRowsAtIndexPaths:[NSArray arrayWithObjects:indexPath,nil] withRowAnimation:UITableViewRowAnimationNone];
+    }
+}
+
+#pragma mark - 自定义tableView
+- (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    NSString *cellIdentifier = @"AdjustAddTableViewCell";
+    AdjustAddTableViewCell *celll = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    if (!celll) {
+        celll = [[AdjustAddTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+    }
+    celll.selectionStyle = UITableViewCellSelectionStyleNone;
+    AdjustAddModel* model = self.dataSourceArr[indexPath.row];
+    [celll configCellWithModel:model];
+    return celll;
+}
+
+#pragma mark - tableView行高
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    AdjustAddModel *model = nil;
+    if (indexPath.row < self.dataSourceArr.count) {
+        model = [self.dataSourceArr objectAtIndex:indexPath.row];
+    }
+    
+    NSString *stateKey = nil;
+    if (model.isExpand) {
+        stateKey = @"expanded";
+    } else {
+        stateKey = @"unexpanded";
+    }
+    
+    return [AdjustAddTableViewCell hyb_heightForTableView:tableView config:^(UITableViewCell *sourceCell) {
+        AdjustAddTableViewCell *cell = (AdjustAddTableViewCell *)sourceCell;
+        [cell configCellWithModel:model];
+    } cache:^NSDictionary *{
+        return @{kHYBCacheUniqueKey: [NSString stringWithFormat:@"%d", model.uid],
+                 kHYBCacheStateKey : stateKey,
+                 kHYBRecalculateForStateKey : @(NO)
+                 };
+    }];
+}
+
+- (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+    self.bgHeaderView = [MyController viewWithFrame:CGRectMake(0, 0, [MyController getScreenWidth], 310)];
+    self.bgHeaderView.backgroundColor = [MyController colorWithHexString:DEFAULTCOLOR];
+    
+    self.sTextfield = [MyController createTextFieldWithFrame:self.view.frame placeholder:@"搜索" passWord:NO leftImageView:nil rightImageView:nil Font:14];
+    self.sTextfield.text = self.keyword;
+    self.sTextfield.backgroundColor = [MyController colorWithHexString:@"eff0f2"];
+    self.sTextfield.delegate = self;
+    self.sTextfield.returnKeyType = UIReturnKeySearch;
+    [self.bgHeaderView addSubview:self.sTextfield];
+    //将图层的边框设置为圆脚
+    self.sTextfield.layer.cornerRadius = 12;
+    self.sTextfield.layer.masksToBounds = YES;
+    [self.sTextfield setContentMode:UIViewContentModeScaleAspectFill];
+    self.sTextfield.clipsToBounds = YES;
+    self.sTextfield.leftView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 8, 0)];
+    self.sTextfield.leftViewMode = UITextFieldViewModeAlways;
+    
+    [self.sTextfield mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(15);
+        make.right.mas_equalTo(-15);
+        make.top.mas_equalTo(15);
+        make.height.mas_offset(30);
+    }];
+    
+    self.whiteBgView = [MyController viewWithFrame:self.view.frame];
+    self.whiteBgView.backgroundColor = [UIColor whiteColor];
+    [self.bgHeaderView addSubview:self.whiteBgView];
+    
+    [self.whiteBgView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.sTextfield);
+        make.right.mas_equalTo(self.sTextfield);
+        make.top.mas_equalTo(self.sTextfield.mas_bottom).mas_offset(15);
+        make.height.mas_offset(330 - 60);
+    }];
+    
+    [AMapServices sharedServices].enableHTTPS = YES;
+    MAMapView *_mapView = [[MAMapView alloc] initWithFrame:self.view.frame];
+    _mapView.showsUserLocation = YES;
+    _mapView.userTrackingMode = MAUserTrackingModeFollow;
+    _mapView.showsCompass = NO;
+    _mapView.showsScale = NO;
+    [_mapView setZoomLevel:15.6 animated:YES];
+    [self.whiteBgView addSubview:_mapView];
+    
+    [_mapView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(15);
+        make.right.mas_equalTo(-15);
+        make.height.mas_offset(235);
+        make.top.mas_equalTo(15);
+    }];
+    
+    return self.bgHeaderView;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    return 330;
+}
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    NSLog(@"搜索：%@",textField.text);
+    self.keyword = textField.text;
+    [textField resignFirstResponder];
+    [self makeSearch:textField.text];
+    return YES;
+    
+}
+/**
+ 开始周边检索
+
+ @param searchText 检索关键字
+ */
+- (void)makeSearch:(NSString*)searchText{
+    [AMapServices sharedServices].apiKey = MAPKEY;
+    self.search = [[AMapSearchAPI alloc] init];
+    self.search.delegate = self;
+    AMapPOIAroundSearchRequest *request = [[AMapPOIAroundSearchRequest alloc] init];
+    request.location            = [AMapGeoPoint locationWithLatitude:self.latitu longitude:self.longit];
+    request.keywords            = searchText;
+    /* 按照距离排序. */
+    request.sortrule            = 0;
+    request.requireExtension    = YES;
+    [self.search AMapPOIAroundSearch:request];
+}
+
+- (void)onPOISearchDone:(AMapPOISearchBaseRequest *)request response:(AMapPOISearchResponse *)response{
+    if (response.pois.count == 0){
+        return;
+    }
+    NSLog(@"%@",response.pois);
+    self.dataSourceArr = [[NSMutableArray alloc] init];
+    for (int i = 0; i < response.pois.count; i++) {
+        NSLog(@"%@----%@\n",response.pois[i].name,response.pois[i].address);
+        AdjustAddModel* model = [[AdjustAddModel alloc] init];
+        model.name = response.pois[i].name;
+        model.rname = response.pois[i].address;
+        [self.dataSourceArr addObject:model];
+    }
+    [_tableView reloadData];
+}
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

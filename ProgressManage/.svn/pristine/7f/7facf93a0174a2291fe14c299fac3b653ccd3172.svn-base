@@ -1,0 +1,242 @@
+//
+//  CustomerDetailViewController.m
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/25.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "CustomerDetailViewController.h"
+
+#import "CustomerDetailModel.h"
+
+#import "CustomerDetailTableViewCell.h"
+
+#import "IncreaseViewController.h"
+
+#import "SalesModel.h"
+#import "SalesTableViewCell.h"
+#import "SaleDetailViewController.h"
+@interface CustomerDetailViewController ()<UITableViewDataSource,UITableViewDelegate>{
+    UITableView* _tableView;
+}
+@property(nonatomic,retain)NSMutableArray* datasourceArr;
+@property(nonatomic,retain)NSMutableArray* datasourceArr1;
+@property(nonatomic,assign)NSInteger pageIndex;
+
+@property(nonatomic,copy)NSString* _token;
+@property(nonatomic,copy)NSString* _errorCode;
+
+@end
+
+@implementation CustomerDetailViewController
+
+- (void)viewWillAppear:(BOOL)animated{
+    [[self rdv_tabBarController] setTabBarHidden:YES animated:YES];
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    self.datasourceArr = [[NSMutableArray alloc] init];
+    self.datasourceArr1 = [[NSMutableArray alloc] init];
+    
+    [self createTableView];
+    
+    [_tableView.mj_header beginRefreshing];
+}
+
+- (void)createRequest{
+    [requestService postCreateTokenWithUserId:[MyController getUserid] cname:[MyController getCName] complate:^(id responseObject) {
+        NSDictionary* souDic = [MyController dictionaryWithJsonString:responseObject[@"data"]];
+        self._token = souDic[@"token"];
+        self._errorCode = souDic[@"errorCode"];
+        
+        [requestService postCustomerDetailWithUserId:[MyController getUserid] id:self._id token:self._token cname:[MyController getCName] complate:^(id responseObject) {
+            if ([responseObject[@"result"] intValue]) {
+                NSLog(@"%@",responseObject[@"data"]);
+                NSDictionary* souDic = [MyController dictionaryWithJsonString:responseObject[@"data"]];
+                CustomerDetailModel* mm = [[CustomerDetailModel alloc] init];
+                mm.name = souDic[@"custName"];
+                mm.isVIP = YES;
+                mm.tel = souDic[@"phone"];
+                mm.jibie = souDic[@"custLevel"];
+                mm.remark = @"全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 全都是泡沫 ";
+                [self.datasourceArr addObject:mm];
+                
+                NSArray* saleArr = souDic[@"ops"];
+                for (NSDictionary* dic in saleArr) {
+                    SalesModel *model = [[SalesModel alloc] init];
+                    model.title = dic[@"lead_source_name"];
+                    model.time = dic[@"createdate"];
+                    model.percent = 0.5;
+                    model.state = @"交付管理";
+                    model.customer = @"东方机械";
+                    model.money = @"¥888888.88";
+                    [self.datasourceArr1 addObject:model];
+                }
+            }
+            [_tableView reloadData];
+            [_tableView.mj_header endRefreshing];
+        } failure:^(NSError *error) {
+            [_tableView.mj_header endRefreshing];
+        }];
+    } failure:^(NSError *error) {
+        
+    }];
+}
+
+#pragma mark - 初始化tableView
+- (void)createTableView{
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, [MyController isIOS7], self.view.frame.size.width, self.view.frame.size.height - [MyController isIOS7]) style:UITableViewStylePlain];
+    _tableView.dataSource = self;
+    _tableView.delegate = self;
+    UIImageView *tableBg = [[UIImageView alloc] initWithImage:nil];
+    tableBg.backgroundColor = [UIColor clearColor];
+    [_tableView setBackgroundView:tableBg];
+    //分割线类型
+    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.showsVerticalScrollIndicator = NO;
+    [self.view addSubview:_tableView];
+    _tableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+        // 进入刷新状态后会自动调用这个block
+        [self headRefresh];
+    }];
+//    _tableView.mj_footer = [MJRefreshAutoNormalFooter footerWithRefreshingBlock:^{//精度
+//        // 进入刷新状态后会自动调用这个block
+//        [self footRefresh];
+//    }];
+}
+#pragma mark - 下拉刷新
+- (void)headRefresh{
+    self.pageIndex = 1;
+    self.datasourceArr = [[NSMutableArray alloc] initWithCapacity:0];
+    
+    [self createRequest];
+}
+#pragma mark - 上拉加载
+- (void)footRefresh{
+    self.pageIndex++;
+    
+    //    [self createRequest];
+    [_tableView.mj_footer endRefreshing];
+}
+#pragma mark - tableView行数
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    if (0 == section) {
+        return self.datasourceArr.count;
+    }
+    return self.datasourceArr1.count;
+}
+#pragma mark - tableVie点击cell
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+//    for(CustomerTableViewCell *tmpCell in tableView.visibleCells){
+//        [tmpCell closeMenu];
+//    }
+//    CustomerModel* model = self.datasourceArr[indexPath.row];
+//    CustomerDetailViewController* vc = [[CustomerDetailViewController alloc] init];
+//    //    vc.presentId = model.idStr;
+//    [self.navigationController pushViewController:vc animated:YES];
+    if (indexPath.section == 1) {
+        
+        SaleDetailViewController *vc = [[SaleDetailViewController alloc] init];
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+}
+#pragma mark - 自定义tableView
+- (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (0 == indexPath.section) {
+        NSString *cellIdentifier = @"CustomerDetailTableViewCell";
+        CustomerDetailTableViewCell *celll = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+        if (!celll) {
+            celll = [[CustomerDetailTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+        }
+        celll.selectionStyle = UITableViewCellSelectionStyleNone;
+        CustomerDetailModel* model = self.datasourceArr[indexPath.row];
+        [celll configCellWithModel:model];
+        return celll;
+    }else if (indexPath.section == 1){
+        SalesTableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@"ID"];
+        if (!cell) {
+            cell = [[SalesTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"ID"];
+        }
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        SalesModel* model = self.datasourceArr1[indexPath.row];
+        [cell setModel:model];
+        return cell;
+    }
+    
+    return nil;
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return 2;
+}
+
+#pragma mark - tableView行高
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (0 == indexPath.section) {
+        CustomerDetailModel *model = nil;
+        if (indexPath.row < self.datasourceArr.count) {
+            model = [self.datasourceArr objectAtIndex:indexPath.row];
+        }
+        
+        return [CustomerDetailTableViewCell hyb_heightForTableView:tableView config:^(UITableViewCell *sourceCell) {
+            CustomerDetailTableViewCell *cell = (CustomerDetailTableViewCell *)sourceCell;
+            [cell configCellWithModel:model];
+        }];
+    }
+    return 130;
+}
+
+- (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+    UIView* menu = [MyController viewWithFrame:CGRectMake(0, 0, [MyController getScreenWidth], 40)];
+    menu.backgroundColor = [MyController colorWithHexString:DEFAULTCOLOR];
+    
+    UILabel* temLable = [MyController createLabelWithFrame:CGRectMake(15, 0, [MyController getScreenWidth], 40) Font:12 Text:@"基本信息"];
+    temLable.textColor = [MyController colorWithHexString:@"b1b5c2"];
+    if (0 == section) {
+        temLable.text = @"基本信息";
+    }else{
+        temLable.text = @"销售信息";
+        
+        UIButton* addBtn = [MyController createButtonWithFrame:CGRectMake(CGRectGetMaxX(menu.frame) - 15 - 40, 0, 40, 40) ImageName:nil Target:self Action:@selector(addBtnClick) Title:@"添加"];
+        [addBtn setBackgroundColor:[UIColor clearColor]];
+        [addBtn setTitleColor:[MyController colorWithHexString:@"9fa4b3"] forState:UIControlStateNormal];
+        addBtn.titleLabel.font = [UIFont systemFontOfSize:12];
+        [menu addSubview:addBtn];
+    }
+    
+    [menu addSubview:temLable];
+    
+    return menu;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    return 40;
+}
+
+- (void)addBtnClick{
+    NSLog(@"添加");
+    [self.navigationController pushViewController:[[IncreaseViewController alloc] init] animated:YES];
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

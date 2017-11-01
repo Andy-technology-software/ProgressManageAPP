@@ -1,0 +1,213 @@
+
+//
+//  SignInRecordTableViewCell.m
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/27.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "SignInRecordTableViewCell.h"
+
+#import "SignInRecordModel.h"
+@interface SignInRecordTableViewCell()
+@property (nonatomic, strong) UIView* headBgView;
+@property (nonatomic, strong) UIView* headView;
+@property (nonatomic, strong) UILabel* headLable;
+@property (nonatomic, strong) UILabel* nameLable;
+@property (nonatomic, strong) UILabel* signTimesLable;
+@property (nonatomic, strong) UIImageView* addImageView;
+@property (nonatomic, strong) UILabel* addLable;
+
+@property (nonatomic, strong) UIView* timeBgView;
+@property (nonatomic, strong) UIImageView* timeImageView;
+@property (nonatomic, strong) UILabel* timeLable;
+@property (nonatomic, strong) UIImageView* timeRightImageView;
+@property (nonatomic, strong) UIButton* timeBtn;
+
+@end
+@implementation SignInRecordTableViewCell
+
+- (nonnull instancetype)initWithStyle:(UITableViewCellStyle)style
+                      reuseIdentifier:(nullable NSString *)reuseIdentifier {
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self makeUI];
+    }
+    
+    return self;
+}
+- (void)makeUI{
+    self.contentView.backgroundColor = [MyController colorWithHexString:DEFAULTCOLOR];
+    
+    self.timeBgView = [MyController viewWithFrame:self.contentView.frame];
+    self.timeBgView.backgroundColor = [UIColor whiteColor];
+    //将图层的边框设置为圆脚
+    self.timeBgView.layer.cornerRadius = 9;
+    self.timeBgView.layer.masksToBounds = YES;
+    [self.timeBgView setContentMode:UIViewContentModeScaleAspectFill];
+    self.timeBgView.clipsToBounds = YES;
+    [self.contentView addSubview:self.timeBgView];
+    
+    [self.timeBgView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(15);
+        make.top.mas_equalTo(15);
+        make.height.mas_offset(25);
+    }];
+    
+    self.timeImageView = [MyController createImageViewWithFrame:self.timeBgView.frame ImageName:@"签到-日期"];
+    [self.timeBgView addSubview:self.timeImageView];
+    
+    [self.timeImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(15);
+        make.top.mas_equalTo(5);
+        make.height.mas_offset(15);
+        make.width.mas_offset(15);
+    }];
+    
+    self.timeLable = [MyController createLabelWithFrame:self.timeBgView.frame Font:12 Text:nil];
+    [self.timeBgView addSubview:self.timeLable];
+    
+    [self.timeLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.timeImageView.mas_right).mas_offset(3);
+        make.top.mas_equalTo(0);
+        make.height.mas_equalTo(self.timeBgView);
+    }];
+    
+    self.timeRightImageView = [MyController createImageViewWithFrame:self.timeBgView.frame ImageName:@"向右"];
+    [self.timeBgView addSubview:self.timeRightImageView];
+    
+    [self.timeRightImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.timeLable.mas_right).mas_offset(3);
+        make.top.mas_equalTo(5);
+        make.height.mas_offset(15);
+        make.width.mas_offset(15);
+    }];
+    
+    self.timeBtn = [MyController createButtonWithFrame:self.timeBgView.frame ImageName:nil Target:self Action:@selector(timeSelect) Title:nil];
+    [self.timeBgView addSubview:self.timeBtn];
+    
+    [self.timeBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(0);
+        make.right.mas_equalTo(0);
+        make.top.mas_equalTo(0);
+        make.height.mas_equalTo(self.timeBgView);
+    }];
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    self.headBgView = [MyController viewWithFrame:self.contentView.frame];
+    self.headBgView.backgroundColor = [UIColor whiteColor];
+    //将图层的边框设置为圆脚
+    self.headBgView.layer.cornerRadius = 6;
+    self.headBgView.layer.masksToBounds = YES;
+    [self.headBgView setContentMode:UIViewContentModeScaleAspectFill];
+    self.headBgView.clipsToBounds = YES;
+    [self.contentView addSubview:self.headBgView];
+    
+    [self.headBgView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.timeBgView);
+        make.top.mas_equalTo(self.timeBgView.mas_bottom).mas_offset(10);
+    }];
+
+    self.headView = [MyController viewWithFrame:self.headBgView.frame];
+    self.headView.backgroundColor = [MyController colorWithHexString:@"bee099"];
+    [self.headBgView addSubview:self.headView];
+    //将图层的边框设置为圆脚
+    self.headView.layer.cornerRadius = 22;
+    self.headView.layer.masksToBounds = YES;
+    [self.headView setContentMode:UIViewContentModeScaleAspectFill];
+    self.headView.clipsToBounds = YES;
+    
+    [self.headView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(12);
+        make.top.mas_equalTo(15);
+        make.height.mas_offset(44);
+        make.width.mas_offset(44);
+    }];
+    
+    self.headLable = [MyController createLabelWithFrame:self.headBgView.frame Font:20 Text:nil];
+    self.headLable.textAlignment = NSTextAlignmentCenter;
+    self.headLable.textColor = [UIColor whiteColor];
+    [self.headBgView addSubview:self.headLable];
+    
+    [self.headLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.headView);
+        make.top.mas_equalTo(self.headView);
+        make.height.mas_equalTo(self.headView);
+        make.width.mas_equalTo(self.headView);
+    }];
+    
+    self.nameLable = [MyController createLabelWithFrame:self.headBgView.frame Font:14 Text:nil];
+    self.nameLable.textColor = [MyController colorWithHexString:TEXTCOLOR];
+    [self.headBgView addSubview:self.nameLable];
+    
+    [self.nameLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.headView.mas_right).mas_offset(10);
+        make.top.mas_equalTo(self.headView);
+    }];
+    
+    self.signTimesLable = [MyController createLabelWithFrame:self.headBgView.frame Font:12 Text:nil];
+    self.signTimesLable.textColor = [MyController colorWithHexString:TEXTCOLOR];
+    [self.headBgView addSubview:self.signTimesLable];
+    
+    [self.signTimesLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.nameLable.mas_right).mas_offset(10);
+        make.bottom.mas_equalTo(self.nameLable);
+    }];
+    
+    self.addImageView = [MyController createImageViewWithFrame:self.headBgView.frame ImageName:@"签到-当前企业"];
+    [self.headBgView addSubview:self.addImageView];
+    
+    [self.addImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.nameLable);
+        make.top.mas_equalTo(self.nameLable.mas_bottom).mas_offset(5);
+        make.width.mas_offset(20);
+        make.height.mas_offset(20);
+    }];
+    
+    self.addLable = [MyController createLabelWithFrame:self.headBgView.frame Font:12 Text:nil];
+    self.addLable.textColor = [MyController colorWithHexString:TEXTCOLOR];
+    self.addLable.numberOfLines = 1;
+    [self.headBgView addSubview:self.addLable];
+    
+    [self.addLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.addImageView.mas_right).mas_offset(3);
+        make.right.mas_equalTo(-15);
+        make.height.mas_offset(20);
+        make.top.mas_equalTo(self.addImageView);
+    }];
+    
+    self.hyb_lastViewInCell = self.headBgView;
+    self.hyb_bottomOffsetToCell = 10;
+    
+}
+
+- (void)configCellWithModel:(SignInRecordModel *)model{
+    [self.timeBgView mas_updateConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(15);
+        make.right.mas_equalTo(self.timeRightImageView.mas_right).mas_offset(5);
+        make.top.mas_equalTo(15);
+        make.height.mas_offset(25);
+    }];
+    
+    [self.headBgView mas_updateConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.timeBgView);
+        make.right.mas_equalTo(self.signTimesLable.mas_right).mas_offset(30);
+        make.top.mas_equalTo(self.timeBgView.mas_bottom).mas_offset(10);
+        make.bottom.mas_equalTo(self.addLable.mas_bottom).mas_offset(20);
+    }];
+    
+    self.nameLable.text = [NSString stringWithFormat:@"%@",model.name];
+    if (model.name.length) {
+        self.headLable.text = [model.name substringToIndex:1];
+    }
+    self.signTimesLable.text = [NSString stringWithFormat:@"本月已签到%@次",model.signTimes];
+    self.addLable.text = model.cname;
+    
+    self.timeLable.text = model.time;
+    
+}
+- (void)timeSelect{
+    [self.SignInRecordTableViewCellDelegate sendBackSelectTime];
+}
+@end

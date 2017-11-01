@@ -1,0 +1,242 @@
+//
+//  IncreasePrepaymentRecordViewController.m
+//  ProgressManage
+//
+//  Created by Gem on 2017/6/2.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "IncreasePrepaymentRecordViewController.h"
+#import "UITextView+placeholder.h"
+
+@interface IncreasePrepaymentRecordViewController ()<UIActionSheetDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate,UITableViewDataSource,UITableViewDelegate,UITextFieldDelegate,UITextViewDelegate>{
+    NSMutableArray *titleArr;
+    NSMutableArray *palceArr;
+    NSInteger indexs;
+    UIButton *head;
+    UIImage *headImag;
+    NSString *headStr;
+}
+@property (nonatomic,strong) UITableView* tableView;
+@property (nonatomic,strong) NSMutableArray *titleSource;
+@property (nonatomic,strong) NSMutableArray *dataSource;
+
+@end
+
+@implementation IncreasePrepaymentRecordViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.title = @"新增交付管理";
+    self.view.backgroundColor = [MyController colorWithHexString:@"f9fafb"];
+    self.dataSource = [NSMutableArray arrayWithObjects:@"",@"",@"",@"",@"", nil];
+    self.titleSource = [NSMutableArray arrayWithObjects:@"金额",@"收款方式",@"收款状态",@"备注", nil];
+    [self createTableView];
+    UIButton *submitBtn = [MyController createButtonWithFrame:CGRectMake(0, SCREEN_HEIGHT - 40, SCREEN_WIDTH, 40) ImageName:nil Target:self Action:@selector(submitAction:) Title:@"保存"];
+    submitBtn.backgroundColor = [MyController colorWithHexString:@"4c89f0"];
+    [self.view addSubview:submitBtn];
+}
+#pragma mark - 保存
+- (void)submitAction:(UIButton *)btn{
+}
+#pragma mark - 初始化tableView
+- (void)createTableView{
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, [MyController isIOS7] + 15, self.view.frame.size.width, self.view.frame.size.height - [MyController isIOS7] - 49) style:UITableViewStylePlain];
+    _tableView.dataSource = self;
+    _tableView.delegate = self;
+    _tableView.backgroundColor = [MyController colorWithHexString:@"f9fafb"];
+    //分割线类型
+    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.showsVerticalScrollIndicator = NO;
+    
+    [self.view addSubview:_tableView];
+}
+#pragma mark - tableView行数
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return self.titleSource.count + 1;
+    
+}
+
+#pragma mark - tableVie点击cell
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+}
+#pragma mark - 自定义tableView
+- (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    UITableViewCell *cell = [[UITableViewCell alloc] init];
+    cell.backgroundColor = [UIColor clearColor];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    UIView *bgView = [UIView new];
+    bgView.frame = CGRectMake(15, 0, SCREEN_WIDTH - 30, 44);
+    bgView.backgroundColor = [UIColor whiteColor];
+    [cell addSubview:bgView];
+    
+    if (indexPath.row == 0 || indexPath.row == 1 || indexPath.row == 2) {
+        UILabel *titlelabel = [UILabel new];
+        titlelabel.font = [UIFont systemFontOfSize:14];
+        titlelabel.textColor = [MyController colorWithHexString:@"81889d"];
+        titlelabel.text = [NSString stringWithFormat:@"%@",self.titleSource[indexPath.row]];
+        titlelabel.frame = CGRectMake(15, 0, 40, 44);
+        titlelabel.numberOfLines = 2;
+        [bgView addSubview:titlelabel];
+        UITextField *tf = [MyController createTextFieldWithFrame:CGRectMake(CGRectGetMaxX(titlelabel.frame) + 15 ,  0, [MyController getScreenWidth] - 110, 44) placeholder:@"请填写" passWord:NO leftImageView:nil rightImageView:nil Font:12];
+        tf.text = self.dataSource[indexPath.row];
+        tf.tag = 100 + indexPath.row;
+        tf.delegate = self;
+        [bgView addSubview:tf];
+        UIView *line = [[UIView alloc] initWithFrame:CGRectMake(15, 44-0.5, [MyController getScreenWidth] - 60, 0.5)];
+        line.backgroundColor = [MyController colorWithHexString:@"e8e8e8"];
+        [bgView addSubview:line];
+        
+    }else if (indexPath.row == 4){
+        head = [MyController createButtonWithFrame:CGRectMake(10, 10, 60, 60) ImageName:@"拍照" Target:self Action:@selector(headAction:) Title:nil];
+        UIImageView *tempView = [[UIImageView alloc] initWithFrame:CGRectZero];
+//        [tempView sd_setImageWithURL:[NSURL URLWithString:headUrl] placeholderImage:headImag completed:^(UIImage *image, NSError *error, EMSDImageCacheType cacheType, NSURL *imageURL) {
+//            
+//            if (![headUrl isEqualToString:@""]) {
+//                [head setBackgroundImage:tempView.image forState:UIControlStateNormal];
+//            }else{
+//                [head setBackgroundImage:[UIImage imageNamed:@"group"] forState:UIControlStateNormal];
+//            }
+//            if (![headStr isEqualToString:@""]) {
+//                
+//                [head setBackgroundImage:tempView.image forState:UIControlStateNormal];
+//            }
+//        }];
+        
+        [bgView addSubview:head];
+        bgView.frame = CGRectMake(15, 0, SCREEN_WIDTH - 30, 80);
+
+        UIImageView *imageView = [MyController createImageViewWithFrame:CGRectMake(85, 25, 53 / 2, 23 / 2) ImageName:@"上传单据"];
+        [bgView addSubview:imageView];
+        
+        UILabel *titlelabel = [UILabel new];
+        titlelabel.font = [UIFont systemFontOfSize:14];
+        titlelabel.textColor = [MyController colorWithHexString:@"81889d"];
+        titlelabel.text = @"可上传收款单据";
+        titlelabel.frame = CGRectMake(85, 50, 150, 20);
+        [bgView addSubview:titlelabel];
+        
+    }else{
+        UILabel *titlelabel = [UILabel new];
+        titlelabel.font = [UIFont systemFontOfSize:14];
+        titlelabel.textColor = [MyController colorWithHexString:@"81889d"];
+        titlelabel.text = [NSString stringWithFormat:@"%@",self.titleSource[indexPath.row]];
+        titlelabel.frame = CGRectMake(15, 0, 40, 44);
+        titlelabel.numberOfLines = 2;
+        [bgView addSubview:titlelabel];
+        UITextView *tv = [[UITextView alloc] initWithFrame:CGRectMake(CGRectGetMaxX(titlelabel.frame) + 10,6, [MyController getScreenWidth] - 110, 154)];
+        tv.font = [UIFont systemFontOfSize:12];
+        tv.placeholder = @"请填写";
+        tv.delegate = self;
+        tv.tag = 100 + indexPath.row;
+        [bgView addSubview:tv];
+        
+        bgView.frame = CGRectMake(15, 0, SCREEN_WIDTH - 30, 160);
+    }
+    return cell;
+}
+#pragma mark - tableView行高
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (indexPath.row == 3) {
+        return 160;
+    }else if(indexPath.row == 4){
+        return 80;
+    }
+    return 44;
+}
+
+- (void)textViewDidEndEditing:(UITextView *)textView{
+    NSInteger index = textView.tag - 100;
+    [self.dataSource replaceObjectAtIndex:index withObject:textView.text];
+    
+}
+- (void)textFieldDidEndEditing:(UITextField *)textField{
+    NSInteger index = textField.tag - 100;
+    [self.dataSource replaceObjectAtIndex:index withObject:textField.text];
+}
+#pragma mark -action
+- (void)headAction:(UIButton *)btn{
+    NSLog(@"头像");
+    UIActionSheet *sheet = [[UIActionSheet alloc]initWithTitle:nil delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:nil otherButtonTitles:@"拍照",@"从相册中选择", nil];
+    [sheet showInView:_tableView];
+}
+-(void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == 0) {
+        NSLog(@"拍照");
+        [self takePhoto];
+    }else if (buttonIndex == 1)
+    {
+        NSLog(@"从相册中选择");
+        [self takeLocalPhoto];
+    }else{
+        NSLog(@"取消");
+    }
+}
+-(void)takePhoto
+{
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        UIImagePickerController *pick = [[UIImagePickerController alloc]init];
+        pick.delegate = self;
+        pick.allowsEditing = NO;
+        pick.sourceType = UIImagePickerControllerSourceTypeCamera;
+        [self presentViewController:pick animated:YES completion:nil];
+    }else{
+        NSLog(@"模拟其中无法打开照相机,请在真机中使用");
+    }
+}
+-(void)takeLocalPhoto
+{
+    UIImagePickerController *pick = [[UIImagePickerController alloc]init];
+    pick.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    pick.delegate = self;
+    pick.allowsEditing = NO;
+    [self presentViewController:pick animated:YES completion:nil];
+}
+
+-(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    
+    NSString *type = [info objectForKey:UIImagePickerControllerMediaType];
+    NSLog(@"type == %@",type);
+    //选择类型为图片
+    if ([type isEqualToString:@"public.image"]) {
+        //转成NSData类型
+        UIImage *image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
+        image = [MyController fixOrientation:image];
+        
+        //        NSData *_data = UIImageJPEGRepresentation(image, 0.001);
+        //        NSInteger imagM = _data.length/1024/1024;
+        //        if(imagM > 2){
+        //            _data = UIImageJPEGRepresentation(image, 2/imagM);
+        //        }
+        image = [self scaleImage:image scaleFactor:0.1];
+        NSData *_data = UIImageJPEGRepresentation(image, 1);
+        headStr = [_data base64EncodedStringWithOptions:NSDataBase64Encoding76CharacterLineLength];
+        
+        [picker dismissViewControllerAnimated:YES completion:nil];
+        headImag = image;
+        [head setImage:image forState:UIControlStateNormal];
+    }
+}
+
+- (UIImage *) scaleImage: (UIImage *)image scaleFactor:(float)scaleFloat
+{
+    CGSize size = CGSizeMake(image.size.width * scaleFloat, image.size.height * scaleFloat);
+    
+    UIGraphicsBeginImageContext(size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    
+    transform = CGAffineTransformScale(transform, scaleFloat, scaleFloat);
+    CGContextConcatCTM(context, transform);
+    
+    [image drawAtPoint:CGPointMake(0.0f, 0.0f)];
+    UIImage *newimg = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return newimg;
+}
+@end

@@ -1,0 +1,1 @@
+../../../LFImagePickerController/LFImagePickerController/class/view/subView/LFStickerView.h

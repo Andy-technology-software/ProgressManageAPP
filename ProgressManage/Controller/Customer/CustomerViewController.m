@@ -1,0 +1,466 @@
+//
+//  CustomerViewController.m
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/8.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "CustomerViewController.h"
+
+#import "CustomerModel.h"
+
+#import "CustomerTableViewCell.h"
+
+#import "NewCustomerViewController.h"
+
+#import "CustomerDetailViewController.h"
+@interface CustomerViewController ()<UITableViewDataSource,UITableViewDelegate,WJMenuDelegate,CustomerTableViewCellDelegate,UIAlertViewDelegate,UITextFieldDelegate>{
+    UITableView* _tableView;
+}
+@property (nonatomic,weak)WJDropdownMenu *menu;
+@property (nonatomic,strong)UITextField *searchtf;
+@property(nonatomic,assign)NSInteger deleIndex;
+//列表数据源
+@property(nonatomic,retain)NSMutableArray* datasourceArr;
+//筛选数据源
+@property (nonatomic,strong)NSMutableArray *data;
+@property(nonatomic,assign)NSInteger pageIndex;
+@property(nonatomic,assign)NSInteger operationIndex;
+@property (nonatomic,strong)NSMutableArray *customerTypeArr;
+@property (nonatomic,strong)NSMutableArray *followStateArr;
+@property (nonatomic,strong)NSMutableArray *customerLevelArr;
+@property (nonatomic,strong)NSMutableArray *customerTypeIdArr;
+@property (nonatomic,strong)NSMutableArray *followStateIdArr;
+@property (nonatomic,strong)NSMutableArray *customerLevelIdArr;
+
+@property(nonatomic,copy)NSString* _token;
+@property(nonatomic,copy)NSString* _errorCode;
+@property(nonatomic,copy)NSString* _customerType;
+@property(nonatomic,copy)NSString* _followState;
+@property(nonatomic,copy)NSString* _customerLevel;
+@property(nonatomic,copy)NSString* _customerType1;
+@property(nonatomic,copy)NSString* _followState1;
+@property(nonatomic,copy)NSString* _customerLevel1;
+@property(nonatomic,copy)NSString* _searchName;
+@property(nonatomic,copy)NSString* _cname;
+@end
+
+@implementation CustomerViewController
+
+- (void)viewWillAppear:(BOOL)animated{
+    [[self rdv_tabBarController] setTabBarHidden:NO animated:YES];
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.datasourceArr = [[NSMutableArray alloc] init];
+    self.view.backgroundColor = [MyController colorWithHexString:@"ffffff"];
+    [self makeNavView];
+    [self createTableView];
+    
+    NSUserDefaults*userDefaults=[NSUserDefaults standardUserDefaults];
+    self._cname = [userDefaults objectForKey:@"enterprise"];
+    [_tableView.mj_header beginRefreshing];
+    [self getCustomerInfoWithToken];
+}
+
+#pragma mark - 客户分类
+- (void)getCustomerInfoWithToken{
+    self._customerType1 = @"类型不限";
+    self._followState1 = @"状态不限";
+    self._customerLevel1 = @"级别不限";
+    self.customerTypeArr = [[NSMutableArray alloc] init];
+    self.followStateArr = [[NSMutableArray alloc] init];
+    self.customerLevelArr = [[NSMutableArray alloc] init];
+    self.customerTypeIdArr = [[NSMutableArray alloc] init];
+    self.followStateIdArr = [[NSMutableArray alloc] init];
+    self.customerLevelIdArr = [[NSMutableArray alloc] init];
+    
+    [requestService postCreateTokenWithUserId:[MyController getUserid] cname:[MyController getCName] complate:^(id responseObject) {
+        if ([responseObject[@"result"] intValue]) {
+            NSDictionary* souDic = [MyController dictionaryWithJsonString:responseObject[@"data"]];
+            self._token = souDic[@"token"];
+            self._errorCode = souDic[@"errorCode"];
+            
+            [requestService postGetCustomerInfoWithToken:self._token cname:[MyController getCName] complate:^(id responseObject) {
+                NSLog(@"%@",responseObject[@"data"]);
+                if ([responseObject[@"result"] intValue]) {
+                    NSDictionary* sdic = [MyController dictionaryWithJsonString:responseObject[@"data"]];
+                    NSArray* temCustomerTypeArr = sdic[@"customerType"];
+                    [self.customerTypeArr addObject:@"类型不限"];
+                    [self.customerTypeIdArr addObject:@""];
+                    for (NSDictionary* dic in temCustomerTypeArr) {
+                        [self.customerTypeArr addObject:dic[@"name"]];
+                        [self.customerTypeIdArr addObject:dic[@"type"]];
+                    }
+                    NSArray* temFollowStateArr = sdic[@"followState"];
+                    [self.followStateArr addObject:@"状态不限"];
+                    [self.followStateIdArr addObject:@""];
+                    for (NSDictionary* dic in temFollowStateArr) {
+                        [self.followStateArr addObject:dic[@"name"]];
+                        [self.followStateIdArr addObject:dic[@"type"]];
+                    }
+                    NSArray* temCustomerLevelArr = sdic[@"customerLevel"];
+                    [self.customerLevelArr addObject:@"级别不限"];
+                    [self.customerLevelIdArr addObject:@""];
+                    for (NSDictionary* dic in temCustomerLevelArr) {
+                        [self.customerLevelArr addObject:dic[@"name"]];
+                        [self.customerLevelIdArr addObject:dic[@"type"]];
+                    }
+                }
+                [_tableView reloadData];
+
+            } failure:^(NSError *error) {
+            }];
+            
+        }
+    } failure:^(NSError *error) {
+
+    }];
+}
+
+- (void)getSourceData {
+    [requestService postCreateTokenWithUserId:[MyController getUserid] cname:[MyController getCName] complate:^(id responseObject) {
+        if ([responseObject[@"result"] intValue]) {
+            NSDictionary* souDic = [MyController dictionaryWithJsonString:responseObject[@"data"]];
+            self._token = souDic[@"token"];
+            self._errorCode = souDic[@"errorCode"];
+            
+            [requestService postCustomerListWithUserId:[MyController getUserid] customerType:[MyController returnStr:self._customerType] followState:[MyController returnStr:self._followState] customerLevel:[MyController returnStr:self._customerLevel] searchName:[MyController returnStr:self._searchName] token:self._token num:@"10" pnum:[NSString stringWithFormat:@"%ld",self.pageIndex] cname:[MyController returnStr:self._cname] complate:^(id responseObject) {
+                NSLog(@"%@",responseObject[@"data"]);
+                if ([responseObject[@"result"] intValue]) {
+                    NSArray* dictArray = [MyController arraryWithJsonString:responseObject[@"data"]];
+                    NSArray *customerModelArray = [CustomerModel mj_objectArrayWithKeyValuesArray:dictArray];
+                    if (1 == self.pageIndex) {
+                        [self.datasourceArr removeAllObjects];
+                        [self.datasourceArr addObjectsFromArray:customerModelArray];
+                        //下拉刷新停止
+                        [_tableView.mj_header endRefreshing];
+                    }else{
+                        [self.datasourceArr addObjectsFromArray:customerModelArray];
+                        [_tableView.mj_footer endRefreshing];
+                    }
+                }
+                [_tableView reloadData];
+                
+            } failure:^(NSError *error) {
+                [_tableView.mj_header endRefreshing];
+                [_tableView.mj_footer endRefreshing];
+            }];
+            
+        }
+        [_tableView.mj_header endRefreshing];
+        [_tableView.mj_footer endRefreshing];
+    } failure:^(NSError *error) {
+        [_tableView.mj_header endRefreshing];
+        [_tableView.mj_footer endRefreshing];
+    }];
+}
+
+
+- (void)makeNavView{
+    self.navigationController.navigationBar.barTintColor = [MyController colorWithHexString:@"ffffff"];
+    UIView *bgView = [[UIView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, [MyController getScreenWidth], 40.0f)];//初始化图片视图控件
+    bgView.contentMode = UIViewContentModeScaleAspectFit;
+    self.navigationItem.titleView = bgView;//设置导航栏的titleView为imageView
+    
+    self.searchtf = [MyController createTextFieldWithFrame:CGRectMake(16, 3, [MyController getScreenWidth] - 80, 32) placeholder:@"搜索" passWord:NO leftImageView:nil rightImageView:nil Font:14];
+    self.searchtf.backgroundColor = [MyController colorWithHexString:@"f1f2f3"];
+    //将图层的边框设置为圆脚
+    self.searchtf.layer.cornerRadius = 16;
+    self.searchtf.layer.masksToBounds = YES;
+    [self.searchtf setContentMode:UIViewContentModeScaleAspectFill];
+    self.searchtf.clipsToBounds = YES;
+    self.searchtf.returnKeyType = UIReturnKeySearch;
+    self.searchtf.delegate = self;
+    self.searchtf.leftView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 8, 0)];
+    self.searchtf.leftViewMode = UITextFieldViewModeAlways;
+    [bgView addSubview:self.searchtf];
+    
+    UIButton* newBtn = [MyController createButtonWithFrame:CGRectMake([MyController getScreenWidth] - 50, 6.5, 25, 25) ImageName:@"添加" Target:self Action:@selector(newBtnClick) Title:nil];
+    [newBtn setBackgroundImage:[UIImage imageNamed:@"添加-触发"] forState:UIControlStateHighlighted];
+    [bgView addSubview:newBtn];
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField{
+    [textField resignFirstResponder];
+    self._searchName = textField.text;
+    [_tableView.mj_header beginRefreshing];
+    
+    return YES;
+}
+
+- (void)newBtnClick{
+    NSLog(@"新增客户");
+    NewCustomerViewController* vc = [[NewCustomerViewController alloc] init];
+    vc.title = @"新增客户";
+    vc.customerTypeArr = self.customerTypeArr;
+    vc.customerTypeIdArr = self.customerTypeIdArr;
+    vc.customerLevelArr = self.customerLevelArr;
+    vc.customerLevelIdArr = self.customerLevelIdArr;
+    vc.followStateIdArr = self.followStateIdArr;
+    vc.followStateArr = self.followStateArr;
+    vc._khId = @"";
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+- (void)createAllMenuData{
+    NSArray *threeMenuTitleArray =  @[self._customerType1,self._followState1,self._customerLevel1];
+    //  创建第一个菜单的first数据second数据
+    NSArray *firstArrOne = [NSArray arrayWithArray:self.customerTypeArr];
+    NSArray *firstMenu = [NSArray arrayWithObject:firstArrOne];
+    
+    //  创建第二个菜单的first数据second数据
+    NSArray *firstArrTwo = [NSArray arrayWithArray:self.followStateArr];
+    NSArray *secondMenu = [NSArray arrayWithObjects:firstArrTwo, nil];
+    
+    //  创建第三个菜单的first数据second数据
+    NSArray *firstArrThree = [NSArray arrayWithArray:self.customerLevelArr];
+
+    NSArray *threeMenu = [NSArray arrayWithObjects:firstArrThree, nil];
+    
+    [self.menu createThreeMenuTitleArray:threeMenuTitleArray FirstArr:firstMenu SecondArr:secondMenu threeArr:threeMenu];
+}
+
+- (void)hideMenu{
+    [self.menu drawBackMenu];
+}
+
+#pragma mark -- 代理方法1 返回点击时对应的index
+
+- (void)menuCellDidSelected:(NSInteger)MenuTitleIndex firstIndex:(NSInteger)firstIndex secondIndex:(NSInteger)secondIndex thirdIndex:(NSInteger)thirdIndex{
+    
+};
+
+#pragma mark -- 代理方法2 返回点击时对应的内容
+- (void)menuCellDidSelected:(NSString *)MenuTitle firstContent:(NSString *)firstContent secondContent:(NSString *)secondContent thirdContent:(NSString *)thirdContent{
+    
+    self.data = [NSMutableArray array];
+    [self.data addObject:[NSString stringWithFormat:@"%@ 的 detail data 1",secondContent]];
+    [self.data addObject:[NSString stringWithFormat:@"%@ 的 detail data 2",secondContent]];
+    [self.data addObject:[NSString stringWithFormat:@"%@ 的 detail data 3",secondContent]];
+    //    [self.tableView reloadData];
+    
+};
+
+#pragma mark -- 代理方法3 返回点击时对应的内容和index(合并了方法1和方法2)
+- (void)menuCellDidSelected:(NSString *)MenuTitle menuIndex:(NSInteger)menuIndex firstContent:(NSString *)firstContent firstIndex:(NSInteger)firstIndex secondContent:(NSString *)secondContent secondIndex:(NSInteger)secondIndex thirdContent:(NSString *)thirdContent thirdIndex:(NSInteger)thirdIndex{
+    NSLog(@"菜单title:%@  titleIndex:%ld,一级菜单:%@    一级菜单Index:%ld,     二级子菜单:%@   二级子菜单Index:%ld   三级子菜单:%@  三级子菜单Index:%ld",MenuTitle,menuIndex,firstContent,firstIndex,secondContent,secondIndex,thirdContent,thirdIndex);
+    if (0 == menuIndex) {
+        self._customerType = self.customerTypeIdArr[firstIndex];
+        self._customerType1 = self.customerTypeArr[firstIndex];
+    }else if (1 == menuIndex) {
+        self._followState = self.followStateIdArr[firstIndex];
+        self._followState1 = self.followStateArr[firstIndex];
+    }else if (2 == menuIndex) {
+        self._customerLevel = self.customerLevelIdArr[firstIndex];
+        self._customerLevel1 = self.customerLevelArr[firstIndex];
+    }
+    [_tableView.mj_header beginRefreshing];
+}
+
+#pragma mark - 初始化tableView
+- (void)createTableView{
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, [MyController isIOS7], self.view.frame.size.width, self.view.frame.size.height - [MyController isIOS7] - 49) style:UITableViewStylePlain];
+    _tableView.dataSource = self;
+    _tableView.delegate = self;
+    UIImageView *tableBg = [[UIImageView alloc] initWithImage:nil];
+    tableBg.backgroundColor = [UIColor whiteColor];
+    [_tableView setBackgroundView:tableBg];
+    //分割线类型
+    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.showsVerticalScrollIndicator = NO;
+    //_tableView.backgroundColor = [UIColor colorWithRed:190 green:30 blue:96 alpha:1];
+    [self.view addSubview:_tableView];
+    _tableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+        // 进入刷新状态后会自动调用这个block
+        [self headRefresh];
+    }];
+    _tableView.mj_footer = [MJRefreshAutoNormalFooter footerWithRefreshingBlock:^{//精度
+        // 进入刷新状态后会自动调用这个block
+        [self footRefresh];
+    }];
+}
+#pragma mark - 下拉刷新
+- (void)headRefresh{
+    self.pageIndex = 1;
+    [self getSourceData];
+    
+}
+#pragma mark - 上拉加载
+- (void)footRefresh{
+    self.pageIndex++;
+    [self getSourceData];
+
+}
+#pragma mark - tableView行数
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return self.datasourceArr.count;
+}
+#pragma mark - tableVie点击cell
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    for(CustomerTableViewCell *tmpCell in tableView.visibleCells){
+        [tmpCell closeMenu];
+    }
+    CustomerModel* model = self.datasourceArr[indexPath.row];
+    CustomerDetailViewController* vc = [[CustomerDetailViewController alloc] init];
+    vc._id = model.id;
+    vc.title = @"客户详情";
+    [self.navigationController pushViewController:vc animated:YES];
+}
+#pragma mark - 自定义tableView
+- (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    NSString *cellIdentifier = [NSString stringWithFormat:@"CustomerTableViewCell"];
+    CustomerTableViewCell *celll = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    [celll closeMenu];
+    if (!celll) {
+        celll = [[CustomerTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+    }
+    celll.CustomerTableViewCellDelegate = self;
+    celll.cellIndex = indexPath.row;
+    celll.selectionStyle = UITableViewCellSelectionStyleNone;
+    CustomerModel* model = self.datasourceArr[indexPath.row];
+    
+    __weak typeof (celll) weakCell = celll;
+    celll.mySwipeBlock = ^{
+        for(CustomerTableViewCell *tmpCell in tableView.visibleCells){
+            // 将其他正在打开的cell关闭
+            if (![weakCell isEqual:tmpCell]) {
+                [tmpCell closeMenu];
+            }
+            // 所有cell取消选中状态
+            tmpCell.selected = NO;
+        }
+    };
+    
+    [celll configCellWithModel:model];
+    
+    return celll;
+}
+#pragma mark - tableView行高
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    CustomerModel *model = nil;
+    if (indexPath.row < self.datasourceArr.count) {
+        model = [self.datasourceArr objectAtIndex:indexPath.row];
+    }
+    
+    return [CustomerTableViewCell hyb_heightForTableView:tableView config:^(UITableViewCell *sourceCell) {
+        CustomerTableViewCell *cell = (CustomerTableViewCell *)sourceCell;
+        // 配置数据
+        [cell configCellWithModel:model];
+    }];
+}
+
+- (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+    WJDropdownMenu *menu = [[WJDropdownMenu alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 40)];
+    menu.delegate = self;         //  设置代理
+    self.menu = menu;
+    menu.menuArrowStyle = menuArrowStyleSolid; //  旋转箭头的样式(空心箭头 or 实心箭头)
+    menu.tableViewMaxHeight = 200;             //  tableView的最大高度(超过此高度就可以滑动显示)
+    menu.menuButtonTag = 100;                  //  menu定义了一个tag值如果与本页面的其他button的值有冲突重合可以自定义设置
+    menu.CarverViewColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.5];//设置遮罩层颜色
+    menu.selectedColor = [MyController colorWithHexString:@"ff7854"];   //  选中的字体颜色
+    menu.unSelectedColor = [MyController colorWithHexString:@"81889d"];//  未选中的字体颜色
+    [self createAllMenuData];
+    return menu;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    return 40;
+}
+
+/**
+ 打电话回调
+
+ @param cellIndex 第几个客户
+ */
+- (void)callNum:(NSInteger)cellIndex{
+    CustomerModel* model = self.datasourceArr[cellIndex];
+    UIWebView*callWebview =[[UIWebView alloc] init];
+    NSString* str = [NSString stringWithFormat:@"tel:%@",model.phone];
+    NSURL *telURL =[NSURL URLWithString:str];
+    [callWebview loadRequest:[NSURLRequest requestWithURL:telURL]];
+    [self.view addSubview:callWebview];
+}
+
+#pragma mark - 编辑客户
+- (void)editNum:(NSInteger)cellIndex{
+    for(CustomerTableViewCell *tmpCell in _tableView.visibleCells){
+        [tmpCell closeMenu];
+    }
+    
+    NewCustomerViewController* vc = [[NewCustomerViewController alloc] init];
+    vc.title = @"资料编辑";
+    vc.customerTypeArr = self.customerTypeArr;
+    vc.customerTypeIdArr = self.customerTypeIdArr;
+    vc.customerLevelArr = self.customerLevelArr;
+    vc.customerLevelIdArr = self.customerLevelIdArr;
+    vc.followStateIdArr = self.followStateIdArr;
+    vc.followStateArr = self.followStateArr;
+    
+    CustomerModel* model = self.datasourceArr[cellIndex];
+    vc.name = model.custName;
+    vc.type = model.custType;
+    vc.jibie = model.custLevel;
+    vc._tel = model.phone;
+    vc._lxr = model.contactPer;
+    vc.remark = model.remark;
+    vc._customerLevel = model.custLevelId;
+    vc._customerType = model.custTypeId;
+    vc._khId = model.id;
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+#pragma mark - 删除客户
+- (void)deleteNum:(NSInteger)cellIndex{
+    self.deleIndex = cellIndex;
+    UIAlertView* al = [[UIAlertView alloc] initWithTitle:@"提示" message:@"是否要删除该客户？" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+    [al show];
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+    if (1 == buttonIndex) {
+        [HUD loading];
+        CustomerModel* model = self.datasourceArr[self.deleIndex];
+        [requestService postCreateTokenWithUserId:[MyController getUserid] cname:[MyController getCName] complate:^(id responseObject) {
+            NSDictionary* souDic = [MyController dictionaryWithJsonString:responseObject[@"data"]];
+            self._token = souDic[@"token"];
+            self._errorCode = souDic[@"errorCode"];
+            
+            [requestService postDeleteCustomerWithUserId:[MyController getUserid] cname:[MyController getCName] token:self._token id:model.id complate:^(id responseObject) {
+                if ([responseObject[@"result"] intValue]) {
+                    for(CustomerTableViewCell *tmpCell in _tableView.visibleCells){
+                        [tmpCell closeMenu];
+                    }
+                    [self.datasourceArr removeObjectAtIndex:self.deleIndex];
+                    [_tableView reloadData];
+                    [HUD success:responseObject[@"data"]];
+                }
+            } failure:^(NSError *error) {
+                
+            }];
+        } failure:^(NSError *error) {
+            
+        }];
+    }
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

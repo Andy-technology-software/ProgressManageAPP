@@ -1,0 +1,164 @@
+//
+//  Footprint20TableViewCell.m
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/26.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "Footprint20TableViewCell.h"
+
+#import "Footprint20Model.h"
+@interface Footprint20TableViewCell()
+@property (nonatomic, strong) UIView* bgView;
+@property (nonatomic, strong) UIView* headView;
+@property (nonatomic, strong) UIView* lineView;
+
+@property (nonatomic, strong) UIImageView* addressImageView;
+@property (nonatomic, strong) UIImageView* rightImageView;
+
+@property (nonatomic, strong) UILabel* headLable;
+@property (nonatomic, strong) UILabel* nameLable;
+@property (nonatomic, strong) UILabel* timeLable;
+@property (nonatomic, strong) UILabel* addressLable;
+@end
+@implementation Footprint20TableViewCell
+
+- (nonnull instancetype)initWithStyle:(UITableViewCellStyle)style
+                      reuseIdentifier:(nullable NSString *)reuseIdentifier {
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self makeUI];
+    }
+    
+    return self;
+}
+- (void)makeUI{
+    self.backgroundColor = [MyController colorWithHexString:DEFAULTCOLOR];
+    
+    self.bgView = [MyController viewWithFrame:self.contentView.frame];
+    self.bgView.backgroundColor = [UIColor whiteColor];
+    //将图层的边框设置为圆脚
+    //    self.bgView.layer.cornerRadius = 6;
+    //    self.bgView.layer.masksToBounds = YES;
+    //    [self.bgView setContentMode:UIViewContentModeScaleAspectFill];
+    //    self.bgView.clipsToBounds = YES;
+    [self.contentView addSubview:self.bgView];
+    
+    [self.bgView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(15);
+        make.right.mas_equalTo(-15);
+        make.top.mas_equalTo(0);
+        make.height.mas_offset(95);
+    }];
+
+    self.headView = [MyController viewWithFrame:self.bgView.frame];
+    self.headView.backgroundColor = [MyController randomColor];//[MyController colorWithHexString:@"bee099"];
+    [self.bgView addSubview:self.headView];
+    //将图层的边框设置为圆脚
+    self.headView.layer.cornerRadius = 22;
+    self.headView.layer.masksToBounds = YES;
+    [self.headView setContentMode:UIViewContentModeScaleAspectFill];
+    self.headView.clipsToBounds = YES;
+    
+    [self.headView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(12);
+        make.top.mas_equalTo(15);
+        make.height.mas_offset(44);
+        make.width.mas_offset(44);
+    }];
+    
+    self.headLable = [MyController createLabelWithFrame:self.bgView.frame Font:20 Text:nil];
+    self.headLable.textAlignment = NSTextAlignmentCenter;
+    self.headLable.textColor = [UIColor whiteColor];
+    [self.bgView addSubview:self.headLable];
+    
+    [self.headLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.headView);
+        make.top.mas_equalTo(self.headView);
+        make.height.mas_equalTo(self.headView);
+        make.width.mas_equalTo(self.headView);
+    }];
+    
+    self.nameLable = [MyController createLabelWithFrame:self.bgView.frame Font:14 Text:nil];
+    self.nameLable.textColor = [MyController colorWithHexString:TEXTCOLOR];
+    [self.bgView addSubview:self.nameLable];
+    
+    [self.nameLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.headView.mas_right).mas_offset(10);
+        make.right.mas_equalTo(-35);
+        make.top.mas_equalTo(self.headView);
+    }];
+    
+    self.timeLable = [MyController createLabelWithFrame:self.bgView.frame Font:12 Text:nil];
+    self.timeLable.textColor = [MyController colorWithHexString:TEXTCOLOR];
+    [self.bgView addSubview:self.timeLable];
+    
+    [self.timeLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.nameLable);
+        make.right.mas_equalTo(self.nameLable);
+        make.top.mas_equalTo(self.nameLable.mas_bottom).mas_offset(5);
+    }];
+    
+    self.addressImageView = [MyController createImageViewWithFrame:self.bgView.frame ImageName:@"定位"];
+    [self.bgView addSubview:self.addressImageView];
+    
+    [self.addressImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.timeLable);
+        make.top.mas_equalTo(self.timeLable.mas_bottom).mas_offset(5);
+        make.width.mas_offset(20);
+        make.height.mas_offset(20);
+    }];
+    
+    self.addressLable = [MyController createLabelWithFrame:self.bgView.frame Font:12 Text:nil];
+    self.addressLable.textColor = [MyController colorWithHexString:TEXTCOLOR];
+    self.addressLable.numberOfLines = 1;
+    self.addressLable.lineBreakMode = NSLineBreakByTruncatingTail;
+    [self.bgView addSubview:self.addressLable];
+    
+    [self.addressLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.addressImageView.mas_right).mas_offset(3);
+        make.right.mas_equalTo(-15);
+        make.height.mas_offset(20);
+        make.top.mas_equalTo(self.addressImageView);
+    }];
+    
+    self.rightImageView = [MyController createImageViewWithFrame:self.bgView.frame ImageName:@"向右"];
+    [self.bgView addSubview:self.rightImageView];
+    
+    [self.rightImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.mas_equalTo(-15);
+        make.height.mas_offset(20);
+        make.width.mas_offset(20);
+        make.centerY.mas_equalTo(self.bgView);
+    }];
+    
+    self.lineView = [MyController viewWithFrame:self.bgView.frame];
+    self.lineView.backgroundColor = [MyController colorWithHexString:LINECOLOR];
+    [self.bgView addSubview:self.lineView];
+    
+    [self.lineView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(15);
+        make.right.mas_equalTo(-15);
+        make.top.mas_equalTo(self.bgView.mas_bottom).mas_offset(-5.5);
+        make.height.mas_offset(0.5);
+    }];
+    
+    self.hyb_lastViewInCell = self.bgView;
+    self.hyb_bottomOffsetToCell = 0;
+    
+}
+
+- (void)configCellWithModel:(Footprint20Model *)model{
+    if (model.name.length) {
+        self.headLable.text = [model.name substringToIndex:1];
+    }
+    
+    self.nameLable.text = model.name;
+    
+    self.timeLable.text = [NSString stringWithFormat:@"%@  今日已签到%ld次",model.time,model.time1];
+//    [MyController fuwenbenLabel:self.timeLable FontNumber:[UIFont systemFontOfSize:12] AndRange:NSMakeRange(3, self.nameLable.text.length - 3) AndColor:[MyController colorWithHexString:@"4c89f0"]];
+
+    self.addressLable.text = model.address;
+}
+
+@end

@@ -1,0 +1,132 @@
+//
+//  SalesMessagesTableViewCell.m
+//  ProgressManage
+//
+//  Created by Gem on 2017/5/31.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "SalesMessagesTableViewCell.h"
+
+@implementation SalesMessagesTableViewCell{
+    UIView *_topView;
+    UILabel *_titleName;
+    UIView *_line;
+    UILabel *_dates;
+    UILabel *_money;
+    UILabel *_remarks;
+    UILabel *_time;
+    UIButton *_deleate;
+    
+}
+
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
+    self=[super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        //布局View
+        self.backgroundColor = [UIColor clearColor];
+        [self setUpView];
+    }
+    return self;
+}
+
+#pragma mark - setUpView
+- (void)setUpView{
+    _line = [UIView new];
+    _line.backgroundColor = [MyController colorWithHexString:@"e2e4e8"];
+    
+    _topView = [UIView new];
+    _topView.backgroundColor = [UIColor whiteColor];
+    _topView.layer.cornerRadius = 5;
+    _topView.clipsToBounds = YES;
+    
+    _titleName = [[UILabel alloc] init];
+    _titleName.numberOfLines = 0;
+    _titleName.font = [UIFont systemFontOfSize:14];
+    
+    _money = [UILabel new];
+    _money.font = [UIFont systemFontOfSize:14];
+    
+    _remarks = [UILabel new];
+    _remarks.font = [UIFont systemFontOfSize:14];
+    
+    _time = [UILabel new];
+    _time.layer.cornerRadius = 10;
+    _time.clipsToBounds = YES;
+    _time.backgroundColor = [MyController colorWithHexString:@"4c89f0"];
+    _time.textColor = [UIColor whiteColor];
+    _time.textAlignment = NSTextAlignmentCenter;
+    _time.font = [UIFont boldSystemFontOfSize:14];
+    
+    _deleate = [UIButton new];
+    [_deleate addTarget:self action:@selector(deleateAction:) forControlEvents:UIControlEventTouchUpInside];
+    [_deleate setImage:[UIImage imageNamed:@"删除"] forState:UIControlStateNormal];
+    
+    [_topView sd_addSubviews:@[_titleName,_money,_remarks,_deleate]];
+    NSArray *views = @[_line, _topView, _time];
+    [self.contentView sd_addSubviews:views];
+}
+- (void)deleateAction:(UIButton *)btn{
+    [self.delegate removeCurrentRecord:self.index];
+}
+- (void)setModel:(SalesMessageModel *)model{
+    NSInteger space = 10;
+    
+    
+    _line.sd_layout
+    .leftSpaceToView(self.contentView,40)
+    .topEqualToView(self.contentView)
+    .bottomEqualToView(self.contentView)
+    .widthIs(3);
+    
+    _time.sd_layout
+    .centerXEqualToView(_line)
+    .topEqualToView(self.contentView)
+    .widthIs(60)
+    .heightIs(20);
+    
+    _topView.sd_layout
+    .leftSpaceToView(_time,15)
+    .topEqualToView(self.contentView)
+    .rightSpaceToView(self.contentView,space);
+    
+    _titleName.sd_layout
+    .leftSpaceToView(_topView,space * 1.5)
+    .topSpaceToView(_topView,5)
+    .rightSpaceToView(_deleate,space)
+    .autoHeightRatio(0);
+
+    _deleate.sd_layout
+    .leftSpaceToView(_titleName,space)
+    .topSpaceToView(_topView,5)
+    .rightSpaceToView(_topView,space)
+    .widthIs(15)
+    .heightIs(15);
+    
+    _money.sd_layout
+    .leftEqualToView(_titleName)
+    .topSpaceToView(_titleName,5)
+    .rightEqualToView(_titleName)
+    .heightIs(20);
+    
+    _remarks.sd_layout
+    .leftEqualToView(_titleName)
+    .topSpaceToView(_money,5)
+    .rightEqualToView(_titleName)
+    .heightIs(20);
+    
+    [_topView setupAutoHeightWithBottomView:_remarks bottomMargin:5];
+    
+    
+    //***********************高度自适应cell设置步骤************************
+    
+    [self setupAutoHeightWithBottomView:_topView bottomMargin:10];
+    _titleName.text = model.titel;
+    _money.text = model.money;
+    _remarks.text = model.remarks;
+    _time.text = model.time;
+    _dates.text = model.dates;
+}
+
+@end

@@ -1,0 +1,100 @@
+//
+//  SignInTableViewCell.m
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/4.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "SignInTableViewCell.h"
+
+@interface SignInTableViewCell()
+@property (nonatomic, strong) UIImageView* tIV;
+@property (nonatomic, strong) UIImageView* cIV;
+@property (nonatomic, strong) UILabel* tLable;
+@property (nonatomic, strong) UILabel* cLable;
+@property (nonatomic, strong) UIView* lineView;
+
+@end
+@implementation SignInTableViewCell
+
+- (nonnull instancetype)initWithStyle:(UITableViewCellStyle)style
+                      reuseIdentifier:(nullable NSString *)reuseIdentifier {
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self makeUI];
+    }
+    
+    return self;
+}
+- (void)makeUI{
+    self.backgroundColor = [MyController colorWithHexString:@"f9fafb"];
+    
+    self.tIV = [[UIImageView alloc] init];
+    [self.contentView addSubview:self.tIV];
+    
+    [self.tIV mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(10);
+        make.left.mas_equalTo(10);
+        make.width.mas_offset(20);
+        make.height.mas_offset(20);
+    }];
+    
+    self.tLable = [[UILabel alloc] init];
+    [self.contentView addSubview:self.tLable];
+    self.tLable.textColor = [MyController colorWithHexString:@"a5aab9"];
+    self.tLable.font = [UIFont systemFontOfSize:14];
+    
+    [self.tLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.tIV.mas_right).mas_offset(2);
+        make.top.mas_equalTo(0);
+        make.height.mas_offset(40);
+    }];
+    
+    self.cIV = [[UIImageView alloc] init];
+    [self.contentView addSubview:self.cIV];
+    
+    [self.cIV mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(self.tIV);
+        make.left.mas_equalTo(self.tLable.mas_right).mas_offset(5);
+        make.width.mas_equalTo(self.tIV);
+        make.height.mas_equalTo(self.tIV);
+    }];
+    
+    self.cLable = [[UILabel alloc] init];
+    self.cLable.textColor = [MyController colorWithHexString:@"a5aab9"];
+    [self.contentView addSubview:self.cLable];
+    self.cLable.numberOfLines = 1;
+    self.cLable.font = [UIFont systemFontOfSize:14];
+    
+    [self.cLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.mas_equalTo(-10);
+        make.left.mas_equalTo(self.cIV.mas_right).mas_offset(2);
+        make.top.mas_equalTo(self.tLable);
+        make.height.mas_equalTo(self.tLable);
+    }];
+    
+    self.lineView = [[UIView alloc] init];
+    [self.contentView addSubview:self.lineView];
+    self.lineView.backgroundColor = [MyController colorWithHexString:@"f9fafb"];
+    
+    [self.lineView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(0);
+        make.right.mas_equalTo(0);
+        make.top.mas_equalTo(self.tLable.mas_bottom);
+        make.height.mas_offset(0.5);
+    }];
+    
+    self.hyb_lastViewInCell = self.lineView;
+    self.hyb_bottomOffsetToCell = 0;
+}
+
+- (void)configCellWithModel{
+    NSDate *date = [NSDate date];
+    self.tLable.text = [MyController encodeTime:date];
+    self.tIV.image = [UIImage imageNamed:@"签到-日期"];
+    
+    self.cLable.text = @"青岛一凌网集成有限公司";
+    self.cIV.image = [UIImage imageNamed:@"签到-当前企业"];
+}
+
+@end

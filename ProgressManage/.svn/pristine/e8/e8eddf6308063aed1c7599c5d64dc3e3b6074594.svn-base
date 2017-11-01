@@ -1,0 +1,738 @@
+//
+//  requestService.m
+//  WhereAreYou
+//
+//  Created by lingnet on 2017/7/5.
+//  Copyright © 2017年 徐仁强. All rights reserved.
+//
+
+#import "requestService.h"
+
+@implementation requestService
+
+/**
+ 登录
+ 
+ @param tel 账号
+ @param password 密码
+ @param deviceType 设备类型(1、ios2、安卓3、web)
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postLoginWithTel:(NSString*)tel password:(NSString*)password deviceType:(NSString*)deviceType complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",mylogin];
+    NSDictionary* param = @{@"tel":tel,@"password":password,@"deviceType":deviceType};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+/**
+ 02.修改密码
+ 
+ @param _id 用户id
+ @param password 旧密码
+ @param newPassword 新密码
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postModifyPasswordWithId:(NSString*)_id password:(NSString*)password newPassword:(NSString*)newPassword complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",modifyPassword];
+    NSDictionary* param = @{@"id":_id,@"password":password,@"newPassword":newPassword};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+/**
+ 03.反馈
+ 
+ @param _id 用户id
+ @param content 内容
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postFeedbackWithId:(NSString*)_id content:(NSString*)content complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",feedback];
+    NSDictionary* param = @{@"id":_id,@"content":content};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+/**
+ 04.获取个人信息
+ 
+ @param _id 用户id
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postGetPersonInfoWithId:(NSString*)_id complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",getPersonInfo];
+    NSDictionary* param = @{@"id":_id};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+/**
+ 05.完善个人资料
+ 
+ @param name 姓名
+ @param sex 性别
+ @param _id 用户id
+ @param idNo  身份证号
+ @param provinceId  省id
+ @param cityId  市id
+ @param areaId   区id
+ @param add  详细地址
+ @param idMarriage 婚姻状况 0未婚1已婚
+ @param birthday 出生日期 'yyyy-MM-dd'
+ @param cid 默认机构ID
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postEditPersonInfoWithName:(NSString*)name sex:(NSString*)sex id:(NSString*)_id idNo :(NSString*)idNo provinceId:(NSString*)provinceId cityId:(NSString*)cityId areaId:(NSString*)areaId add:(NSString*)add idMarriage:(NSString*)idMarriage birthday:(NSString*)birthday cid:(NSString*)cid complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",editPersonInfo];
+    NSDictionary* param = @{@"name":name, @"sex":sex, @"id":_id, @"idNo":idNo, @"provinceId":provinceId, @"cityId":cityId, @"areaId":areaId, @"add":add, @"idMarriage":idMarriage, @"birthday":birthday, @"cid":cid};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+/**
+ 06.注册--下一步
+ 
+ @param deviceType 设备类型(1、ios2、安卓3、web)
+ @param tel 手机号
+ @param password 密码
+ @param authCode 验证码
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postRegistWithDeviceType:(NSString*)deviceType tel:(NSString*)tel password:(NSString*)password authCode:(NSString*)authCode complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",myregist];
+    NSDictionary* param = @{@"deviceType":deviceType, @"tel":tel, @"password":password, @"authCode":authCode};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+/**
+ 07.忘记密码
+ 
+ @param tel 手机号
+ @param password 密码
+ @param authCode 验证码
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postForgetPasswordWithTel:(NSString*)tel password:(NSString*)password authCode:(NSString*)authCode complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",forgetPassword];
+    NSDictionary* param = @{@"tel":tel, @"password":password, @"authCode":authCode};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+/**
+ 08.获取验证码
+ 
+ @param tel 手机号
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postSendAuthcodeWithTel:(NSString*)tel complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",sendAuthcode];
+    NSDictionary* param = @{@"tel":tel};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+/**
+ 09.换头像
+ 
+ @param _id 用户id
+ @param picture 头像
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postChangeAvatarWithId:(NSString*)_id picture:(NSString*)picture complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",changeAvatar];
+    NSDictionary* param = @{@"id":_id, @"picture":picture};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+///**
+// 10.获取资讯列表
+//
+// @param complate 请求完成
+// @param failure 请求失败
+// */
+//+(void)postgetInformationList complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure;
+
+
+
+
+/**
+ 11.获取广告图片
+ 
+ @param type 位置 1首页，2体检页
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postGetAdsWithType:(NSString*)type complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",getAds];
+    NSDictionary* param = @{@"loc":type};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+/**
+ 12.更换手机号
+ 
+ @param authCode 验证码
+ @param _id 用户ID
+ @param tel 新手机号
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postChangeTelWithAuthCode:(NSString*)authCode id:(NSString*)_id tel:(NSString*)tel complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",changeTel];
+    NSDictionary* param = @{@"authCode":authCode, @"id":_id, @"tel":tel};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+/**
+ 13.获取区域列表
+ 
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postgetAreaListWithPid:(NSString*)pid complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",mygetAreaList];
+    NSDictionary* param = @{@"pid":pid};
+
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+/**
+ 032.体检机构-列表/所有体检机构-下拉列表
+ 
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postGetBranchListWithArea:(NSString*)area  complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",getBranchList];
+    NSDictionary* param = @{@"area":area};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+
+/**
+ 订单详情
+ 
+ @param orderId 订单id
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postgetOrderDetailsWithOrderId:(NSString*)orderId complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",getOrderDetails];
+    NSDictionary* param = @{@"id":orderId};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+/**
+ 条码-二维码
+ 
+ @param orderId 用户套餐ID
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postgetGetCodesWithOrderId:(NSString*)orderId complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",getCodes];
+    NSDictionary* param = @{@"appUser":orderId};
+    
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+/**
+ 自我检测首页获取类型
+ 
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postGetSelfHomelList:(NSString*)type complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",getSelfHomelList];
+    NSDictionary* param = nil;
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+/**
+ 自我检测 获取web页面
+ 
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postgetBaseGuideMeal:(NSString*)type fzxId:(NSString*)fzxId complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",getBaseGuideMeal];
+    NSDictionary* param = @{@"type":type,@"fzxId":fzxId};
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+/**
+ 睡眠
+ 
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postFindSleepQuestions:(NSString*)type complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",findSleepQuestions];
+    NSDictionary* param = nil;
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+/**
+ 心里
+ 
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postFindPressQuestions:(NSString*)type complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",findPressQuestions];
+    NSDictionary* param = nil;
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+
+/**
+ 分配客服
+ 
+ @param uId 用户id
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postAllotService:(NSString*)uId complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",allotService];
+    NSDictionary* param = @{@"id":uId};
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+/**
+ 结束会话
+ 
+ @param uId 用户id
+ @param sId 服务者id
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postEndService:(NSString*)uId sId:(NSString*)sId complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",endService];
+    NSDictionary* param = @{@"id":uId,@"serviceId":sId};
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+/********************************************************************************销售过程接口**********************************************************************************************/
+
+
+
+
+
+
+/**
+ 14.日报列表
+ 
+ @param userId 当前用户 id
+ @param time 选择时间日期
+ @param _id 人员 Id
+ @param token 时间戳
+ @param num 数量
+ @param pnum 页码
+ @param cname 公司名
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postdailyListWithUserId:(NSString*)userId time:(NSString*)time id:(NSString*)_id token:(NSString*)token num:(NSString*)num pnum:(NSString*)pnum cname:(NSString*)cname complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",dailyList];
+    NSDictionary* param = @{@"userId":userId,@"time":time,@"id":_id,@"token":token,@"num":num,@"pnum":pnum,@"cname":cname};
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+/**
+ 12.日报
+ 
+ @param userId 当前用户 id
+ @param content 日报内容
+ @param loaction 地址
+ @param sendMessage 是否发送消息 0 不发，1 发送
+ @param sendPers 添加的多个用户 Id
+ @param time 日报填写时间
+ @param token 时间戳
+ @param cname 公司名
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postdailyListWithUserId:(NSString*)userId content:(NSString*)content loaction:(NSString*)loaction sendMessage:(NSString*)sendMessage sendPers:(NSString*)sendPers token:(NSString*)token time:(NSString*)time cname:(NSString*)cname complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",dailyList];
+    NSDictionary* param = @{@"userId":userId,@"content":content,@"loaction":loaction,@"sendMessage":sendMessage,@"sendPers":sendPers,@"token":token,@"time":time,@"cname":cname};
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+
+/***********************************************************************销售过程接口*****客户customer!XXXX.action*******************************************************************/
+
+
+
+
+
+
+/**
+ 1.客户列表
+ @param userId 当前用户 id
+ @param customerType 客户分类;空和不限就是全部
+ @param followState 跟进状态;空和不限就是全部
+ @param customerLevel 客户级别;空和不限就是全部
+ @param searchName 模糊查询条件(名称、负责员工)
+ @param token 时间戳
+ @param num 每页数量
+ @param pnum 页码
+ @param cname 组织名
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postCustomerListWithUserId:(NSString*)userId customerType:(NSString*)customerType followState:(NSString*)followState customerLevel:(NSString*)customerLevel searchName:(NSString*)searchName token:(NSString*)token num:(NSString*)num pnum:(NSString*)pnum cname:(NSString*)cname complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",customerList];
+    NSDictionary* param = @{@"userId":userId,@"customerType":customerType,@"followState":followState,@"customerLevel":customerLevel,@"searchName":searchName,@"token":token,@"num":num,@"pnum":pnum,@"cname":cname};
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+/**
+ 2.客户分类
+ @param token 时间戳
+ @param cname 组织名
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postGetCustomerInfoWithToken:(NSString*)token cname:(NSString*)cname complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",getCustomerInfo];
+    NSDictionary* param = @{@"token":token,@"cname":cname};
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+/**
+ 3.客户详情
+ @param userId 用户 ID
+ @param _id 客户 ID
+ @param token 时间戳
+ @param cname 组织名
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postCustomerDetailWithUserId:(NSString*)userId id:(NSString*)_id token:(NSString*)token cname:(NSString*)cname complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",customerDetail];
+    NSDictionary* param = @{@"userId":userId,@"id":_id,@"token":token,@"cname":cname};
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+/**
+ 4.客户新增
+ @param userId 用户 ID
+ @param customerType 客户类型
+ @param token 时间戳
+ @param customerLevel 客户级别
+ @param contact 联系方式
+ @param customerName 客户名称
+ @param des 备注
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postCreateCustomerWithUserId:(NSString*)userId customerType:(NSString*)customerType token:(NSString*)token customerLevel:(NSString*)customerLevel contact:(NSString*)contact customerName:(NSString*)customerName des:(NSString*)des complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",createCustomer];
+    NSDictionary* param = @{@"userId":userId,@"customerType":customerType,@"token":token,@"customerLevel":customerLevel,@"contact":contact,@"customerName":customerName,@"des":des};
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+/**
+ 5.客户筛选(接口多余—直接在客户列表筛选，详情建客户 列表)
+ @param userId 用户 ID
+ @param customerName 客户名称
+ @param token 时间戳
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postSearchCustomerWithUserId:(NSString*)userId customerName:(NSString*)customerName token:(NSString*)token complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",searchCustomer];
+    NSDictionary* param = @{@"userId":userId,@"customerName":customerName,@"token":token};
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+/**
+ 6.客户删除
+ @param userId 用户 ID
+ @param cname 公司名
+ @param token 时间戳
+ @param _id 客户id
+ @param complate 请求完成
+ @param failure 请求失败
+ */
++(void)postDeleteCustomerWithUserId:(NSString*)userId cname:(NSString*)cname token:(NSString*)token id:(NSString*)_id complate:(HttpSuccessBlock)complate failure:(HttpFailureBlock)failure{
+    NSString* path = [NSString stringWithFormat:@"%@",deleteCustomer];
+    NSDictionary* param = @{@"userId":userId,@"cname":cname,@"token":token,@"id":_id};
+    [XRQRequestClient postWithOldURLString:path params:param WithSuccess:^(id responseObject) {
+        !complate?:complate(responseObject);
+    } WithFailure:^(NSError *error) {
+        !failure?:failure(error);
+    }];
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@end

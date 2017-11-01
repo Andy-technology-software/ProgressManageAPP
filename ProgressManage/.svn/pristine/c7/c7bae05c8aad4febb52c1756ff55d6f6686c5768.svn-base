@@ -1,0 +1,303 @@
+//
+//  SignInAddTableViewCell.m
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/4.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "SignInAddTableViewCell.h"
+
+#import "SignInAddModel.h"
+
+#import "RipplesView.h"
+@interface SignInAddTableViewCell()
+//d48a4e19d3e04be694d24798605803dd
+@property (nonatomic, strong) UIView* bgView;
+@property (nonatomic, strong) UIView* lineView;
+
+@property (nonatomic, strong) UILabel* addLable;
+@property (nonatomic, strong) UILabel* kfLable;
+@property (nonatomic, strong) UILabel* xsLable;
+@property (nonatomic, strong) UILabel* duiLable;
+@property (nonatomic, strong) UILabel* qdLable;
+@property (nonatomic, strong) UILabel* qdtLable;
+
+@property (nonatomic, strong) UITextField* kfTextfield;
+@property (nonatomic, strong) UITextField* xsTextfield;
+
+@property (nonatomic, strong) UIImageView* txlImageview;
+@property (nonatomic, strong) UIImageView* qdImageview;
+@property (nonatomic, strong) UIImageView* duiImageview;
+
+@property (nonatomic, strong) UIButton* qdBtn;
+@property (nonatomic, strong) UIButton* wtBtn;
+
+@property (nonatomic, strong) RipplesView* rippleView;
+@end
+@implementation SignInAddTableViewCell
+
+- (nonnull instancetype)initWithStyle:(UITableViewCellStyle)style
+                      reuseIdentifier:(nullable NSString *)reuseIdentifier {
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self makeUI];
+    }
+    
+    return self;
+}
+- (void)makeUI{
+    self.backgroundColor = [MyController colorWithHexString:DEFAULTCOLOR];
+    
+    self.bgView = [MyController viewWithFrame:self.contentView.frame];
+    self.bgView.backgroundColor = [UIColor whiteColor];
+    //将图层的边框设置为圆脚
+    self.bgView.layer.cornerRadius = 6;
+    self.bgView.layer.masksToBounds = YES;
+    [self.bgView setContentMode:UIViewContentModeScaleAspectFill];
+    self.bgView.clipsToBounds = YES;
+    [self.contentView addSubview:self.bgView];
+    
+    [self.bgView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(10);
+        make.right.mas_equalTo(-10);
+        make.top.mas_equalTo(0);
+        make.height.mas_offset(220);
+    }];
+    
+    self.addLable = [[UILabel alloc] init];
+    [self.bgView addSubview:self.addLable];
+    self.addLable.numberOfLines = 0;
+    self.addLable.font = [UIFont systemFontOfSize:14];
+    
+    [self.addLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(15);
+        make.right.mas_equalTo(-15);
+        make.height.mas_offset(40);
+        make.top.mas_equalTo(0);
+    }];
+
+    [AMapServices sharedServices].enableHTTPS = YES;
+    MAMapView *_mapView = [[MAMapView alloc] initWithFrame:self.contentView.frame];
+    _mapView.showsUserLocation = YES;
+    _mapView.userTrackingMode = MAUserTrackingModeFollow;
+    _mapView.showsCompass = NO;
+    _mapView.showsScale = NO;
+    [_mapView setZoomLevel:15.6 animated:YES];
+    [self.bgView addSubview:_mapView];
+    
+    [_mapView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.addLable);
+        make.right.mas_equalTo(self.addLable);
+        make.height.mas_offset(95);
+        make.top.mas_equalTo(self.addLable.mas_bottom);
+    }];
+    
+    self.wtBtn = [MyController createButtonWithFrame:self.contentView.frame ImageName:nil Target:self Action:@selector(wtBtnClick) Title:nil];
+    [self.contentView addSubview:self.wtBtn];
+    
+    [self.wtBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.addLable);
+        make.right.mas_equalTo(self.addLable);
+        make.top.mas_equalTo(self.addLable);
+        make.bottom.mas_equalTo(_mapView.mas_bottom);
+    }];
+    
+    
+    self.kfLable = [[UILabel alloc] init];
+    [self.bgView addSubview:self.kfLable];
+    self.kfLable.numberOfLines = 1;
+    self.kfLable.textColor = [MyController colorWithHexString:@"a5aab9"];
+    self.kfLable.font = [UIFont systemFontOfSize:14];
+    
+    [self.kfLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.addLable);
+        make.top.mas_equalTo(_mapView.mas_bottom);
+        make.height.mas_offset(42);
+        make.width.mas_offset(70);
+    }];
+
+    self.txlImageview = [MyController createImageViewWithFrame:self.contentView.frame ImageName:@"签到-拜访客户选择"];
+    [self.bgView addSubview:self.txlImageview];
+    
+    [self.txlImageview mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.mas_equalTo(self.addLable);
+        make.top.mas_equalTo(_mapView.mas_bottom).mas_offset(10);
+        make.height.mas_offset(20);
+        make.width.mas_offset(20);
+    }];
+    
+    
+    self.kfTextfield = [MyController createTextFieldWithFrame:self.contentView.frame placeholder:@"请选择或输入" passWord:NO leftImageView:nil rightImageView:nil Font:14];
+    self.kfTextfield.textColor = [MyController colorWithHexString:@"a5aab9"];
+    [self.bgView addSubview:self.kfTextfield];
+    
+    [self.kfTextfield mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.kfLable.mas_right);
+        make.right.mas_equalTo(self.txlImageview.mas_left);
+        make.height.mas_equalTo(self.kfLable);
+        make.top.mas_equalTo(self.kfLable);
+    }];
+    
+    self.lineView = [[UIView alloc] init];
+    self.lineView.backgroundColor = [MyController colorWithHexString:@"eeeff2"];
+    [self.bgView addSubview:self.lineView];
+    [self.lineView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.kfLable);
+        make.right.mas_equalTo(self.txlImageview);
+        make.height.mas_offset(0.5);
+        make.top.mas_equalTo(self.kfLable.mas_bottom);
+    }];
+    
+    self.xsLable = [[UILabel alloc] init];
+    [self.bgView addSubview:self.xsLable];
+    self.xsLable.numberOfLines = 1;
+    self.xsLable.textColor = [MyController colorWithHexString:@"a5aab9"];
+    self.xsLable.font = [UIFont systemFontOfSize:14];
+    
+    [self.xsLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.kfLable);
+        make.top.mas_equalTo(self.lineView.mas_bottom);
+        make.height.mas_equalTo(self.kfLable);
+        make.width.mas_equalTo(self.kfLable);
+    }];
+    
+    self.kfTextfield = [MyController createTextFieldWithFrame:self.contentView.frame placeholder:@"请选择" passWord:NO leftImageView:nil rightImageView:nil Font:14];
+    self.kfTextfield.textColor = [MyController colorWithHexString:@"a5aab9"];
+    [self.bgView addSubview:self.kfTextfield];
+    
+    [self.kfTextfield mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.xsLable.mas_right);
+        make.right.mas_equalTo(self.txlImageview);
+        make.height.mas_equalTo(self.xsLable);
+        make.top.mas_equalTo(self.xsLable);
+    }];
+    
+    self.rippleView = [[RipplesView alloc] initMinRadius:5 maxRadius:70];
+
+    self.rippleView.rippleCount = 4;
+    self.rippleView.rippleDuration = 4;
+    self.rippleView.backgroundColor = [UIColor clearColor];
+    self.rippleView.rippleColor = [UIColor clearColor];
+    self.rippleView.borderWidth = 3;
+    self.rippleView.borderColor = [MyController colorWithHexString:@"29a3ea"];
+    [self.rippleView startAnimation];
+    [self.contentView addSubview:self.rippleView];
+    [self.rippleView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.height.mas_offset(70);
+        make.width.mas_offset(70);
+        make.top.mas_equalTo(self.bgView.mas_bottom).mas_offset(15 + 70);
+        make.centerX.mas_equalTo(self.contentView).mas_offset(35);
+    }];
+    
+    self.qdImageview = [MyController createImageViewWithFrame:self.contentView.frame ImageName:@"签到-按钮"];
+    self.qdImageview.backgroundColor = [MyController colorWithHexString:DEFAULTCOLOR];
+    [self.contentView addSubview:self.qdImageview];
+    //将图层的边框设置为圆脚
+    self.qdImageview.layer.cornerRadius = 40;
+    self.qdImageview.layer.masksToBounds = YES;
+    [self.qdImageview setContentMode:UIViewContentModeScaleAspectFill];
+    self.qdImageview.clipsToBounds = YES;
+
+    
+    [self.qdImageview mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.height.mas_offset(80);
+        make.width.mas_offset(80);
+        make.centerX.mas_equalTo(self.contentView);
+        make.centerY.mas_equalTo(self.rippleView).mas_offset(-35);
+    }];
+    
+    
+    self.qdLable = [MyController createLabelWithFrame:self.contentView.frame Font:16 Text:@"签到"];
+    self.qdLable.textColor = [MyController colorWithHexString:@"27a5ea"];
+    self.qdLable.textAlignment = NSTextAlignmentCenter;
+//    self.qdLable.backgroundColor = [UIColor redColor];
+    [self.contentView addSubview:self.qdLable];
+    
+    [self.qdLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.qdImageview);
+        make.right.mas_equalTo(self.qdImageview);
+        make.top.mas_equalTo(self.qdImageview).mas_offset(20);
+    }];
+    
+    self.qdtLable = [MyController createLabelWithFrame:self.contentView.frame Font:16 Text:[self getCurrentTime]];
+    self.qdtLable.textColor = [MyController colorWithHexString:@"27a5ea"];
+    self.qdtLable.textAlignment = NSTextAlignmentCenter;
+//    self.qdtLable.backgroundColor = [UIColor redColor];
+    [self.contentView addSubview:self.qdtLable];
+    
+    [self.qdtLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.mas_equalTo(self.qdLable);
+        make.right.mas_equalTo(self.qdLable);
+        make.top.mas_equalTo(self.qdLable.mas_bottom).mas_offset(2);
+    }];
+    
+    self.qdBtn = [MyController createButtonWithFrame:self.contentView.frame ImageName:nil Target:self Action:@selector(qdBtnClick) Title:nil];
+    [self.contentView addSubview:self.qdBtn];
+    
+    [self.qdBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.height.mas_offset(140);
+        make.width.mas_offset(140);
+        make.top.mas_equalTo(self.bgView.mas_bottom).mas_offset(15);
+        make.centerX.mas_equalTo(self.contentView);
+    }];
+    
+    self.duiLable = [MyController createLabelWithFrame:self.contentView.frame Font:12 Text:@"今日你已签到 次"];
+    self.duiLable.textColor = [MyController colorWithHexString:@"a5aab9"];
+//    self.duiLable.backgroundColor = [UIColor redColor];
+    [self.contentView addSubview:self.duiLable];
+    
+    [self.duiLable mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.width.mas_offset(100);
+        make.top.mas_equalTo(self.rippleView.mas_bottom).mas_offset(8);
+        make.centerX.mas_equalTo(self.contentView).mas_offset(5);
+    }];
+    
+    self.duiImageview = [MyController createImageViewWithFrame:self.contentView.frame ImageName:@"签到-已签到"];
+    [self.contentView addSubview:self.duiImageview];
+    
+    [self.duiImageview mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.width.mas_offset(16);
+        make.height.mas_offset(16);
+        make.top.mas_equalTo(self.duiLable);
+        make.right.mas_equalTo(self.duiLable.mas_left).mas_offset(-2);
+    }];
+    
+    self.hyb_lastViewInCell = self.duiLable;
+    self.hyb_bottomOffsetToCell = 20;
+    
+}
+
+-(void)configCellWithModel:(SignInAddModel *)model{
+    self.addLable.text = @"城发大厦";//model.add;
+    self.kfLable.text = @"拜访客户";
+    self.xsLable.text = @"销售";
+}
+
+/**
+ 获取当前时间
+
+ @return 返回时间
+ */
+- (NSString *)getCurrentTime {
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"hh:mm"];
+    NSString *dateTime = [formatter stringFromDate:[NSDate date]];
+    return dateTime;
+}
+
+/**
+ 签到响应
+ */
+- (void)qdBtnClick{
+    NSLog(@"签到");
+    [self.SignInAddTableViewCellDelegate sendBackQiandao];
+}
+
+/**
+ 微调响应
+ */
+- (void)wtBtnClick{
+    NSLog(@"微调");
+    [self.SignInAddTableViewCellDelegate sendBackWeitiao];
+}
+@end

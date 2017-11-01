@@ -1,0 +1,19 @@
+//
+//  RegistrationListModel.h
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/22.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface RegistrationListModel : NSObject
+@property(nonatomic,copy)NSString* name;
+@property(nonatomic,copy)NSString* title;
+@property(nonatomic,copy)NSString* type;
+@property(nonatomic,copy)NSString* startTime;
+@property(nonatomic,copy)NSString* sendTime;
+@property(nonatomic,copy)NSString* state;
+
+@end

@@ -1,0 +1,110 @@
+//
+//  LingXinViewController.m
+//  ProgressManage
+//
+//  Created by Gem on 2017/5/4.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "LingXinViewController.h"
+#import "ChatViewController.h"
+#import <UserNotifications/UserNotifications.h>
+#import "EaseSDKHelper.h"
+#import "EaseMessageViewController.h"
+#import "ContactViewController.h"
+@interface LingXinViewController ()<EMChatManagerDelegate>
+
+
+
+@end
+
+@implementation LingXinViewController
+
+
+- (void)dealloc{
+    [[EMClient sharedClient].chatManager removeDelegate:self];
+}
+- (void)messagesDidReceive:(NSArray *)aMessages{
+    NSLog(@"接受消息：%ld条",aMessages.count);
+    [self tableViewDidTriggerHeaderRefresh];
+    NSIndexSet *indexSet=[[NSIndexSet alloc]initWithIndex:1];
+    [self.tableView reloadSections:indexSet withRowAnimation:UITableViewRowAnimationNone];
+ 
+}
+- (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    [self tableViewDidTriggerHeaderRefresh];
+    [self.tableView reloadData];
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.title = @"凌信";
+    self.view.backgroundColor = [MyController colorWithHexString:@"f9fafb"];
+    [[EMClient sharedClient].chatManager addDelegate:self delegateQueue:nil];
+    [self creatRightBtn];
+    [self removeEmptyConversationsFromDB];
+
+}
+
+- (void)removeEmptyConversationsFromDB
+{
+    NSArray *conversations = [[EMClient sharedClient].chatManager getAllConversations];
+    NSMutableArray *needRemoveConversations;
+    for (EMConversation *conversation in conversations) {
+        if (!conversation.latestMessage || (conversation.type == EMConversationTypeChatRoom)) {
+            if (!needRemoveConversations) {
+                needRemoveConversations = [[NSMutableArray alloc] initWithCapacity:0];
+            }
+            
+            [needRemoveConversations addObject:conversation];
+        }
+    }
+    
+    if (needRemoveConversations && needRemoveConversations.count > 0) {
+        [[EMClient sharedClient].chatManager deleteConversations:needRemoveConversations isDeleteMessages:YES completion:nil];
+    }
+}
+-(void)creatRightBtn{
+    UIButton*rightButton = [[UIButton alloc]initWithFrame:CGRectMake(0,0,40,20)];
+    [rightButton setImage:[UIImage imageNamed:@"ͨѶ¼"] forState:UIControlStateNormal];
+    [rightButton setImage:[UIImage imageNamed:@"通讯录-触发"] forState:UIControlStateHighlighted];
+    rightButton.imageEdgeInsets = UIEdgeInsetsMake(0, 20, 0, 0);
+    [rightButton addTarget:self action:@selector(contactAction)forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem*rightItem = [[UIBarButtonItem alloc]initWithCustomView:rightButton];
+    self.navigationItem.rightBarButtonItem= rightItem;
+}
+-(void)contactAction{
+  
+    ContactViewController *vc = [[ContactViewController alloc] init];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+//#pragma mark - 初始化tableView
+//- (void)createTableView{
+//    self.automaticallyAdjustsScrollViewInsets = NO;
+//    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, [MyController isIOS7], self.view.frame.size.width, self.view.frame.size.height - [MyController isIOS7] - 49) style:UITableViewStylePlain];
+//    _tableView.dataSource = self;
+//    _tableView.delegate = self;
+//    _tableView.backgroundColor = [MyController colorWithHexString:@"f9fafb"];
+//    //分割线类型
+//    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+//    _tableView.showsVerticalScrollIndicator = NO;
+////    _tableView.header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+////        [self headerRefresh];
+////    }];
+////    _tableView.footer = [MJRefreshAutoNormalFooter footerWithRefreshingBlock:^{
+////        [self footerRefresh];
+////    }];
+//    [self.view addSubview:_tableView];
+//}
+//#pragma mark - 刷新
+//- (void)headerRefresh{
+//   
+//    
+//}
+//- (void)footerRefresh{
+//   
+//    
+//}
+
+@end

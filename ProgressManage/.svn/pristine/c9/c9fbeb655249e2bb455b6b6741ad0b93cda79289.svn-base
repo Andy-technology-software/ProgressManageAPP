@@ -1,0 +1,18 @@
+//
+//  GemHeader.h
+//  ProgressManage
+//
+//  Created by Gem on 2017/5/4.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#ifndef GemHeader_h
+#define GemHeader_h
+#define SCREEN_WIDTH ([UIScreen mainScreen].bounds.size.width)
+#define SCREEN_HEIGHT ([UIScreen mainScreen].bounds.size.height)
+#import "UIView+Extension.h"
+#import <HyphenateLite_CN/EMSDK.h>
+#import "EaseUI.h"
+#import "UIView+SDAutoLayout.h"
+#import "UITableView+SDAutoTableViewCellHeight.h"
+#endif /* GemHeader_h */

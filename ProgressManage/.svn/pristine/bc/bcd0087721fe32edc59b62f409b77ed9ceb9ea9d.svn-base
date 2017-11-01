@@ -1,0 +1,18 @@
+//
+//  NewCustomerViewController.h
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/25.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "BaseViewController.h"
+
+@interface NewCustomerViewController : BaseViewController
+@property (nonatomic,strong)NSMutableArray *customerTypeArr;
+@property (nonatomic,strong)NSMutableArray *followStateArr;
+@property (nonatomic,strong)NSMutableArray *customerLevelArr;
+@property (nonatomic,strong)NSMutableArray *customerTypeIdArr;
+@property (nonatomic,strong)NSMutableArray *followStateIdArr;
+@property (nonatomic,strong)NSMutableArray *customerLevelIdArr;
+@end

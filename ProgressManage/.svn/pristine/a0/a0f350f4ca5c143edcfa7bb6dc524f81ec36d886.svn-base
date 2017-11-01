@@ -1,0 +1,234 @@
+//
+//  requestURL.h
+//  WhereAreYou
+//
+//  Created by lingnet on 2017/7/5.
+//  Copyright © 2017年 徐仁强. All rights reserved.
+//
+
+#ifndef requestURL_h
+#define requestURL_h
+#define HEADER1 @"http://192.168.1.113:8080/"
+
+
+// 01.登陆
+#define mylogin HEADER1"common!login.action"
+
+
+//02.修改密码
+#define modifyPassword HEADER1"common!modifyPassword.action"
+
+
+//03.反馈
+#define feedback HEADER1"common!feedback.action"
+
+
+//04.获取个人信息
+#define getPersonInfo HEADER1"common!getPersonInfo.action"
+
+
+//05.完善个人资料
+#define editPersonInfo HEADER1"common!editPersonInfo.action"
+
+
+//06.注册--下一步
+#define myregist HEADER1"common!regist.action"
+
+
+//07.忘记密码
+#define forgetPassword HEADER1"common!forgetPassword.action"
+
+
+//08.获取验证码
+#define sendAuthcode HEADER1"common!sendAuthcode.action"
+
+
+//09.换头像
+#define changeAvatar HEADER1"common!changeAvatar.action"
+
+
+//10.获取资讯列表
+#define getInformationList HEADER1"common!getInformationList.action"
+
+
+//11.获取广告图片
+#define getAds HEADER1"common!getAds.action"
+
+
+//12.更换手机号
+#define changeTel HEADER1"common!changeTel.action"
+
+
+//13.获取区域列表
+#define mygetAreaList HEADER1"common!getAreaList.action"
+
+
+//032.体检机构-列表/所有体检机构-下拉列表
+#define getBranchList HEADER1"medical!getBranchList.action"
+
+
+//订单详情
+#define getOrderDetails HEADER1"mine!getOrderDetails.action"
+
+
+//订单详情
+#define getCodes HEADER1"mine!getCodes.action"
+
+
+//自我检测   首页类型
+#define getSelfHomelList HEADER1"medical!getSelfHomelList.action"
+
+
+//自我检测   获取web页面
+#define getBaseGuideMeal HEADER1"medical!getBaseGuideMeal.action"
+
+
+//睡眠选项
+#define findSleepQuestions HEADER1"medical!findSleepQuestions.action"
+
+
+//心里选项
+#define findPressQuestions HEADER1"medical!findPressQuestions.action"
+
+
+//分配客服
+#define allotService HEADER1"common!allotService.action"
+
+
+//结束会话
+#define endService HEADER1"common!endService"
+
+/********************************************************************************销售过程接口**********************************************************************************************/
+
+
+
+
+//12.日报
+#define createDaily HEADER1"daily!createDaily.action"
+
+
+
+//13.获取下级人员
+#define getNextPers HEADER1"daily!getNextPers.action"
+
+
+
+//14.日报列表
+#define dailyList HEADER1"daily!dailyList.action"
+
+
+
+//15.定位(获取某个时间、某个人的轨迹)
+#define getTrack HEADER1"location!getTrack.action"
+
+
+
+//16.上传经纬度
+#define upLocation HEADER1"location!upLocation.action"
+
+
+
+//15.请假/外出(leave!XXXX.action 获取请假/外出次数)
+#define getLeaveNum HEADER1"leave!getLeaveNum.action"
+
+
+
+//16.请假/外出
+#define createLeave HEADER1"leave!createLeave.action"
+
+
+
+//17.获取外出类型和请假类型
+#define findType HEADER1"leave!findType.action"
+
+
+
+//18.请假/外出记录
+#define leaveList HEADER1"leave!leaveList.action"
+
+
+
+//19.外出详情、请假详情同审核详情
+//#define leaveList HEADER1"leave!leaveList.action"
+
+
+
+//20.审核列表
+#define auditList HEADER1"leave!auditList.action"
+
+
+
+//21.审核详情
+#define auditDetail HEADER1"leave!detail.action"
+
+
+
+//22  交审核
+#define auditSave HEADER1"leave!auditSave.action"
+
+
+
+//22  交审核
+#define auditSave HEADER1"leave!auditSave.action"
+
+
+
+/***********************************************************************销售过程接口*****客户customer!XXXX.action*******************************************************************/
+
+
+
+//1.客户列表
+#define customerList HEADER1"customer!list.action"
+
+
+
+//2.客户分类
+#define getCustomerInfo HEADER1"customer!getCustomerInfo.action"
+
+
+//3.客户详情
+#define customerDetail HEADER1"customer!customerDetail.action"
+
+
+//4.客户新增
+#define createCustomer HEADER1"customer!createCustomer.action"
+
+
+//5.客户筛选(接口多余—直接在客户列表筛选，详情建客户 列表)
+#define searchCustomer HEADER1"customer!searchCustomer.action"
+
+
+//6.客户删除
+#define deleteCustomer HEADER1"customer!deleteCustomer.action"
+
+
+
+
+/********************************************************************************销售过程接口******用户信息****************************************************************************************/
+
+
+//1.用户申请试用(调在线管理平台接口)
+#define apply HEADER1"user_app!apply.action"
+
+
+//2.用户登录
+#define login HEADER1"user_app!login.action"
+
+
+//3.用户资料修改
+#define InfoUpdate HEADER1"user_app!InfoUpdate.action"
+
+
+//4.修改密码
+#define changePass HEADER1"user_app!changePass.action"
+
+
+//5.获取签到次数(sign!XXX.action)
+#define getSignNum HEADER1"sign!getSignNum.action"
+
+
+
+
+
+
+#endif /* requestURL_h */

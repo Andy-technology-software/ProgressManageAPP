@@ -1,0 +1,15 @@
+//
+//  Daily1Model.h
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/23.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface Daily1Model : NSObject
+@property(nonatomic,copy)NSString* content;
+@property(nonatomic,copy)NSString* location;
+
+@end

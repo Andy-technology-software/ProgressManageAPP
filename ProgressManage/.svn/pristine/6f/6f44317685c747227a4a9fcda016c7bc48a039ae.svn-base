@@ -1,0 +1,14 @@
+//
+//  ContactViewController.h
+//  ProgressManage
+//
+//  Created by Gem on 2017/5/25.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "BaseViewController.h"
+
+@interface ContactViewController : UITableViewController
+@property (nonatomic, strong) NSMutableArray *dataArray;
+
+@end

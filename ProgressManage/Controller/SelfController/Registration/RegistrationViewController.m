@@ -1,0 +1,635 @@
+//
+//  RegistrationViewController.m
+//  ProgressManage
+//
+//  Created by lingnet on 2017/5/22.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "RegistrationViewController.h"
+
+#import "Registration0Model.h"
+
+#import "Registration0TableViewCell.h"
+
+#import "Registration1Model.h"
+
+#import "Registration1TableViewCell.h"
+
+#import "Registration2Model.h"
+
+#import "Registration2TableViewCell.h"
+
+#import "Registration3Model.h"
+
+#import "Registration3TableViewCell.h"
+
+#import "RegistrationListViewController.h"
+
+#import "ContactViewController.h"
+@interface RegistrationViewController ()<UITableViewDataSource,UITableViewDelegate,Registration0TableViewCellDelegate,AdvancedExpandableTableViewDelegate,Registration2TableViewCellDelegate,Registration3TableViewCellDelegate,ImagePickerSheetViewControllerDelegate,MWPhotoBrowserDelegate,YBImgPickerViewControllerDelegate,ContactViewControllerDelegate,UIAlertViewDelegate>{
+    UITableView* _tableView;
+    CGFloat textCellHeight;
+}
+@property(nonatomic,strong)NSMutableArray* dataSourceArr0;
+@property(nonatomic,strong)NSMutableArray* dataSourceArr1;
+@property(nonatomic,strong)NSMutableArray* dataSourceArr2;
+@property(nonatomic,strong)NSMutableArray* dataSourceArr3;
+@property(nonatomic,strong)NSMutableArray* dataSourceBase64Arr;
+
+@property(nonatomic,strong)UIView* bgHeaderView;
+@property(nonatomic,strong)UIImageView* hImageView;
+@property(nonatomic,strong)UILabel* hLable;
+@property(nonatomic,strong)UIButton* hBtn;
+
+@property (strong, nonatomic) UINavigationController *photoNavigationController;
+@property (strong, nonatomic) MWPhotoBrowser *photoBrowser;
+@property (strong, nonatomic) UIWindow *keyWindow;
+@property(nonatomic,retain)NSMutableArray* photos;
+
+@property (strong, nonatomic) MHDatePicker *selectDatePicker;
+
+@property(nonatomic,copy)NSString* _token;
+@property(nonatomic,copy)NSString* _errorCode;
+@property(nonatomic,copy)NSString* _leaveNum;
+
+@property(nonatomic,copy)NSString* _leaveType;
+@property(nonatomic,copy)NSString* _stime;
+@property(nonatomic,copy)NSString* _etime;
+@property(nonatomic,copy)NSString* _duration;
+@property(nonatomic,copy)NSString* _due;
+@property(nonatomic,copy)NSString* _leaveImg;
+@property(nonatomic,copy)NSString* _auditPers;
+@end
+
+@implementation RegistrationViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.view.backgroundColor = [MyController colorWithHexString:DEFAULTCOLOR];
+    
+    self.dataSourceArr0 = [[NSMutableArray alloc] init];
+    Registration0Model* model0 = [[Registration0Model alloc] init];
+    model0.selfType = self._type;
+    [self.dataSourceArr0 addObject:model0];
+    
+    self.dataSourceArr1 = [[NSMutableArray alloc] init];
+    Registration1Model* model1 = [[Registration1Model alloc] init];
+    [self.dataSourceArr1 addObject:model1];
+    
+    self.dataSourceArr2 = [[NSMutableArray alloc] init];
+    Registration2Model* model2 = [[Registration2Model alloc] init];
+    [self.dataSourceArr2 addObject:model2];
+    
+    self.dataSourceArr3 = [[NSMutableArray alloc] init];
+    Registration3Model* model3 = [[Registration3Model alloc] init];
+    [self.dataSourceArr3 addObject:model3];
+    
+    [self createTableView];
+    
+    [self makeSendView];
+    
+    [self myGetLeaveNum];
+}
+
+#pragma mark - 获取外出次数
+- (void)myGetLeaveNum{
+    [requestService postCreateTokenWithUserId:[MyController getUserid] cname:[MyController getCName] complate:^(id responseObject) {
+        if ([responseObject[@"result"] intValue]) {
+            NSDictionary* souDic = [MyController dictionaryWithJsonString:responseObject[@"data"]];
+            self._token = souDic[@"token"];
+            self._errorCode = souDic[@"errorCode"];
+            
+            [requestService postGetLeaveNumWithUserId:[MyController getUserid] type:self._type token:self._token complate:^(id responseObject) {
+                NSLog(@"%@",responseObject[@"data"]);
+                NSDictionary* dic = [MyController dictionaryWithJsonString:responseObject[@"data"]];
+                self._leaveNum = dic[@"count"];
+                NSIndexSet *indexSet= [[NSIndexSet alloc]initWithIndex:0];
+                [_tableView reloadSections:indexSet withRowAnimation:UITableViewRowAnimationAutomatic];
+            } failure:^(NSError *error) {
+                
+            }];
+        }
+    } failure:^(NSError *error) {
+        [_tableView.mj_header endRefreshing];
+        [_tableView.mj_footer endRefreshing];
+    }];
+    
+    
+}
+
+#pragma mark - 请假/外出
+- (void)postCreateLeave{
+    [requestService postCreateTokenWithUserId:[MyController getUserid] cname:[MyController getCName] complate:^(id responseObject) {
+        if ([responseObject[@"result"] intValue]) {
+            NSDictionary* souDic = [MyController dictionaryWithJsonString:responseObject[@"data"]];
+            self._token = souDic[@"token"];
+            self._errorCode = souDic[@"errorCode"];
+            
+            [requestService postCreateLeaveWithUserId:[MyController getUserid] leaveType:[MyController returnStr:self._leaveType] stime:[MyController returnStr:self._stime] etime:[MyController returnStr:self._etime] duration:[MyController returnStr:self._duration] due:[MyController returnStr:self._due] leaveImg:[MyController returnStr:self._leaveImg] auditPers:[MyController returnStr:self._auditPers] type:self._type token:[MyController returnStr:self._token] complate:^(id responseObject) {
+                NSLog(@"%@",responseObject[@"data"]);
+                if ([responseObject[@"result"] intValue]) {
+                    [HUD success:responseObject[@"data"]];
+                    self.dataSourceArr0 = [[NSMutableArray alloc] init];
+                    Registration0Model* model0 = [[Registration0Model alloc] init];
+                    [self.dataSourceArr0 addObject:model0];
+                    
+                    self.dataSourceArr1 = [[NSMutableArray alloc] init];
+                    Registration1Model* model1 = [[Registration1Model alloc] init];
+                    [self.dataSourceArr1 addObject:model1];
+                    
+                    self.dataSourceArr2 = [[NSMutableArray alloc] init];
+                    Registration2Model* model2 = [[Registration2Model alloc] init];
+                    [self.dataSourceArr2 addObject:model2];
+                    
+                    self.dataSourceArr3 = [[NSMutableArray alloc] init];
+                    Registration3Model* model3 = [[Registration3Model alloc] init];
+                    [self.dataSourceArr3 addObject:model3];
+                    
+                    [_tableView reloadData];
+                    
+                    RegistrationListViewController* vc = [[RegistrationListViewController alloc] init];
+                    vc._type = self._type;
+                    [self.navigationController pushViewController:vc animated:YES];
+                }
+            } failure:^(NSError *error) {
+                
+            }];
+        }
+    } failure:^(NSError *error) {
+        [_tableView.mj_header endRefreshing];
+        [_tableView.mj_footer endRefreshing];
+    }];
+}
+
+#pragma mark - 获取外出类型和请假类型+获取请假/外出次数
+- (void)postFindType{
+    [requestService postCreateTokenWithUserId:[MyController getUserid] cname:[MyController getCName] complate:^(id responseObject) {
+        if ([responseObject[@"result"] intValue]) {
+            NSDictionary* souDic = [MyController dictionaryWithJsonString:responseObject[@"data"]];
+            self._token = souDic[@"token"];
+            self._errorCode = souDic[@"errorCode"];
+            NSLog(@"%@----%@",self._type,self._token);
+            [requestService postFindTypeWithType:self._type token:self._token complate:^(id responseObject) {
+                NSLog(@"%@",responseObject[@"data"]);
+                NSDictionary* souDic = [MyController dictionaryWithJsonString:responseObject[@"data"]];
+                NSArray* souArr = souDic[@"type"];
+                NSMutableArray* typeArr = [[NSMutableArray alloc] initWithCapacity:0];
+                NSMutableArray* typeIdArr = [[NSMutableArray alloc] initWithCapacity:0];
+                for (NSDictionary* dic in souArr) {
+                    [typeIdArr addObject:dic[@"type"]];
+                    [typeArr addObject:dic[@"name"]];
+                }
+                
+                Registration0Model* model = [self.dataSourceArr0 lastObject];
+                [BRStringPickerView showStringPickerWithTitle:@"请选择外出类型" dataSource:typeArr defaultSelValue:[typeArr firstObject] isAutoSelect:NO resultBlock:^(id selectValue) {
+                    for (int i = 0; i < typeArr.count; i++) {
+                        if ([selectValue isEqualToString:typeArr[i]]) {
+                            self._leaveType = typeIdArr[i];
+                            model.goType = selectValue;
+                            break;
+                        }
+                    }
+                    [_tableView reloadSections:[[NSIndexSet alloc]initWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
+                }];
+            } failure:^(NSError *error) {
+                
+            }];
+        }
+    } failure:^(NSError *error) {
+        [_tableView.mj_header endRefreshing];
+        [_tableView.mj_footer endRefreshing];
+    }];
+    
+}
+
+- (void)makeSendView{
+    UIButton* sendBtn = [MyController createButtonWithFrame:CGRectMake(0, CGRectGetMaxY(_tableView.frame), [MyController getScreenWidth], 50) ImageName:nil Target:self Action:@selector(sendBtnClick) Title:@"提交"];
+    [sendBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [sendBtn setBackgroundColor:[MyController colorWithHexString:@"4c89f0"]];
+    [self.view addSubview:sendBtn];
+}
+- (void)sendBtnClick{
+    NSLog(@"提交");
+    if (![MyController returnStr:self._leaveType].length) {
+        [HUD warning:@"请选择外出类型"];
+        return;
+    }else if (![MyController returnStr:self._stime].length) {
+        [HUD warning:@"请选择开始时间"];
+        return;
+    }else if (![MyController returnStr:self._etime].length) {
+        [HUD warning:@"请选择结束时间"];
+        return;
+    }else if (![MyController returnStr:self._duration].length || [self._duration intValue] <= 0) {
+        [HUD warning:@"时长不能为空"];
+        return;
+    }
+    [HUD loading];
+    [self postCreateLeave];
+}
+#pragma mark - 初始化tableView
+- (void)createTableView{
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, [MyController isIOS7], self.view.frame.size.width, [MyController getScreenHeight] - [MyController isIOS7] - 50) style:UITableViewStylePlain];
+    _tableView.dataSource = self;
+    _tableView.delegate = self;
+    _tableView.backgroundColor = [UIColor clearColor];
+    //分割线类型
+    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.showsVerticalScrollIndicator = NO;
+    [self.view addSubview:_tableView];
+}
+
+#pragma mark - tableView行数
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return 1;
+}
+
+#pragma mark - 自定义tableView
+- (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (0 == indexPath.section) {
+        Registration0TableViewCell *celll = [[Registration0TableViewCell alloc] init];
+        celll.selectionStyle = UITableViewCellSelectionStyleNone;
+        Registration0Model* model = self.dataSourceArr0[indexPath.row];
+        celll.Registration0TableViewCellDelegate = self;
+        [celll configCellWithModel:model];
+        return celll;
+    }else if (1 == indexPath.section){
+        Registration1TableViewCell *textCell = [tableView advancedExpandableTextCellWithId1:@"Registration1TableViewCell"];
+        textCell.placeholder = @"请填写";
+        if (0 == [self._type intValue]) {
+            textCell.leftLable.text = @"外出事由";
+        }else {
+            textCell.leftLable.text = @"请假事由";
+        }
+        textCell.selectionStyle = UITableViewCellSelectionStyleNone;
+        textCell.maxCharacter = 1000;
+        
+        return textCell;
+    }else if (2 == indexPath.section){
+        Registration2TableViewCell *celll = [[Registration2TableViewCell alloc] init];
+        celll.selectionStyle = UITableViewCellSelectionStyleNone;
+        Registration2Model* model = self.dataSourceArr2[indexPath.row];
+        celll.Registration2TableViewCellDelegate = self;
+        [celll configCellWithModel:model];
+        return celll;
+
+    }
+    Registration3TableViewCell *celll = [[Registration3TableViewCell alloc] init];
+    celll.selectionStyle = UITableViewCellSelectionStyleNone;
+    Registration3Model* model = self.dataSourceArr3[indexPath.row];
+    celll.Registration3TableViewCellDelegate = self;
+    [celll configCellWithModel:model];
+    return celll;
+}
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
+    return 4;
+}
+#pragma mark - tableView行高
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (0 == indexPath.section) {
+        return 180;
+    }else if (1 == indexPath.section) {
+        return MAX(50, textCellHeight);
+    }else if (2 == indexPath.section){
+        Registration2Model *model = nil;
+        if (indexPath.row < self.dataSourceArr2.count) {
+            model = [self.dataSourceArr2 objectAtIndex:indexPath.row];
+        }
+        
+        return [Registration2TableViewCell hyb_heightForTableView:tableView config:^(UITableViewCell *sourceCell) {
+            Registration2TableViewCell *cell = (Registration2TableViewCell *)sourceCell;
+            [cell configCellWithModel:model];
+        }];
+    }
+    Registration3Model *model = nil;
+    if (indexPath.row < self.dataSourceArr3.count) {
+        model = [self.dataSourceArr3 objectAtIndex:indexPath.row];
+    }
+    
+    return [Registration3TableViewCell hyb_heightForTableView:tableView config:^(UITableViewCell *sourceCell) {
+        Registration3TableViewCell *cell = (Registration3TableViewCell *)sourceCell;
+        [cell configCellWithModel:model];
+    }];
+}
+
+#pragma mark - 这是事由cell代理
+- (void)tableView:(UITableView *)tableView updatedHeight:(CGFloat)height atIndexPath:(NSIndexPath *)indexPath{
+    textCellHeight = height;
+}
+- (void)tableView:(UITableView *)tableView updatedText:(NSString *)text atIndexPath:(NSIndexPath *)indexPath{
+    NSLog(@"debug : updatedText\n%@", text);
+    self._due = text;
+}
+
+- (UIView*)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+    if (0 == section) {
+        self.bgHeaderView = [MyController viewWithFrame:CGRectMake(0, 0, [MyController getScreenWidth], 40)];
+        self.bgHeaderView.backgroundColor = [MyController colorWithHexString:DEFAULTCOLOR];
+        
+        self.hImageView = [MyController createImageViewWithFrame:self.bgHeaderView.frame ImageName:@"签到-日期"];
+        [self.bgHeaderView addSubview:self.hImageView];
+        [self.hImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(15);
+            make.top.mas_equalTo(10);
+            make.height.mas_offset(20);
+            make.width.mas_offset(20);
+        }];
+        
+        if (0 == [self._type intValue]) {
+            self.hLable = [MyController createLabelWithFrame:self.bgHeaderView.frame Font:13 Text:[NSString stringWithFormat:@"这是本月第%@次提交外出登记 查看记录 ",[MyController returnStr:self._leaveNum]]];
+        }else {
+            self.hLable = [MyController createLabelWithFrame:self.bgHeaderView.frame Font:13 Text:[NSString stringWithFormat:@"这是本月第%@次提交请假登记 查看记录 ",[MyController returnStr:self._leaveNum]]];
+        }
+        
+        [self.bgHeaderView addSubview:self.hLable];
+        self.hLable.textColor = [MyController colorWithHexString:@"a5aab9"];
+        [self.hLable mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(self.hImageView.mas_right).mas_offset(5);
+            make.top.mas_equalTo(0);
+            make.right.mas_equalTo(-15);
+            make.height.mas_offset(40);
+        }];
+        
+        [MyController fuwenbenLabel:self.hLable FontNumber:[UIFont systemFontOfSize:13] AndRange:NSMakeRange(self.hLable.text.length - 5, 5) AndColor:[MyController colorWithHexString:@"4c89f0"]];
+        
+        self.hBtn = [MyController createButtonWithFrame:self.bgHeaderView.frame ImageName:nil Target:self Action:@selector(lookList) Title:nil];
+        [self.bgHeaderView addSubview:self.hBtn];
+        [self.hBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(self.hImageView.mas_right).mas_offset(5);
+            make.top.mas_equalTo(0);
+            make.right.mas_equalTo(-15);
+            make.height.mas_offset(40);
+        }];
+        
+        return self.bgHeaderView;
+    }
+    return nil;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    if (0 == section) {
+        return 40;
+    }
+    return 0;
+}
+
+
+/**
+ 查看外出记录
+ */
+- (void)lookList{
+    NSLog(@"查看记录");
+    RegistrationListViewController* vc = [[RegistrationListViewController alloc] init];
+    vc._type = self._type;
+    if (0 == [self._type intValue]) {
+        vc.title = @"外出记录";
+    }else {
+        vc.title = @"请假记录";
+    }
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+/**
+ cell0代理回调
+
+ @param index 点击index
+ @param lTime 返回的时长
+ */
+- (void)sendBackSelect:(NSInteger)index AndTime:(NSString *)lTime{
+    Registration0Model* model0 = [self.dataSourceArr0 lastObject];
+    if (0 == index) {
+        NSLog(@"外出类型");
+        [HUD loading];
+        [self postFindType];
+    }else if (1 == index){
+        NSLog(@"开始时间");
+        _selectDatePicker = [[MHDatePicker alloc] init];
+        _selectDatePicker.isBeforeTime = YES;
+        _selectDatePicker.datePickerMode = UIDatePickerModeDateAndTime;
+        
+        __weak typeof(self) weakSelf = self;
+        [_selectDatePicker didFinishSelectedDate:^(NSDate *selectedDate) {
+            model0.sTiem = [weakSelf dateStringWithDate:selectedDate DateFormat:@"yyyy-MM-dd HH:mm:ss"];
+            model0.sTiemDate = selectedDate;
+            self._stime = model0.sTiem;
+            if (model0.eTiem.length) {
+                // 当前日历
+                NSCalendar *calendar = [NSCalendar currentCalendar];
+                // 需要对比的时间数据
+                NSCalendarUnit unit = NSCalendarUnitYear | NSCalendarUnitMonth
+                | NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
+                // 对比时间差
+                NSDateComponents *dateCom = [calendar components:unit fromDate:model0.sTiemDate toDate:model0.eTiemDate options:0];
+                model0.lTime = [NSString stringWithFormat:@"%ld",(long)dateCom.day];
+                self._duration = model0.lTime;
+            }
+            
+            NSIndexSet *indexSet=[[NSIndexSet alloc]initWithIndex:0];
+            [_tableView reloadSections:indexSet withRowAnimation:UITableViewRowAnimationAutomatic];
+        }];
+
+    }else if (2 == index){
+        NSLog(@"结束时间");
+        _selectDatePicker = [[MHDatePicker alloc] init];
+        _selectDatePicker.isBeforeTime = YES;
+        _selectDatePicker.datePickerMode = UIDatePickerModeDateAndTime;
+        
+        __weak typeof(self) weakSelf = self;
+        [_selectDatePicker didFinishSelectedDate:^(NSDate *selectedDate) {
+            model0.eTiem = [weakSelf dateStringWithDate:selectedDate DateFormat:@"yyyy-MM-dd HH:mm:ss"];
+            model0.eTiemDate = selectedDate;
+            self._etime = model0.eTiem;
+            if (model0.sTiem.length) {
+                // 当前日历
+                NSCalendar *calendar = [NSCalendar currentCalendar];
+                // 需要对比的时间数据
+                NSCalendarUnit unit = NSCalendarUnitYear | NSCalendarUnitMonth
+                | NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
+                // 对比时间差
+                NSDateComponents *dateCom = [calendar components:unit fromDate:model0.sTiemDate toDate:model0.eTiemDate options:0];
+                model0.lTime = [NSString stringWithFormat:@"%ld",(long)dateCom.day];
+                self._duration = model0.lTime;
+            }
+            
+            [_tableView reloadSections:[[NSIndexSet alloc]initWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
+        }];
+
+    }else if (3 == index){
+        NSLog(@"时长");
+        model0.lTime = lTime;
+        self._duration = model0.lTime;
+        NSIndexSet *indexSet=[[NSIndexSet alloc]initWithIndex:0];
+        [_tableView reloadSections:indexSet withRowAnimation:UITableViewRowAnimationAutomatic];
+    }
+}
+
+- (NSString *)dateStringWithDate:(NSDate *)date DateFormat:(NSString *)dateFormat{
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:dateFormat];
+    [dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"zh_CN"]];
+    NSString *str = [dateFormatter stringFromDate:date];
+    return str ? str : @"";
+}
+
+- (void)YBImagePickerDidFinishWithImages:(NSArray *)imageArray {
+    NSLog(@"----%@",imageArray);
+    self.dataSourceBase64Arr = [[NSMutableArray alloc] init];
+    NSLog(@"添加图片");
+    Registration2Model* model = [self.dataSourceArr2 lastObject];
+    if (model.useImage) {
+        [HUD warning:@"最多支持上传1张"];
+        return;
+    }
+    
+    for (UIImage * image in imageArray) {
+        model.useImage = image;
+        self.photos = [[NSMutableArray alloc] init];
+        [self.photos addObject:[MWPhoto photoWithImage:image]];
+        
+        NSIndexSet *indexSet=[[NSIndexSet alloc]initWithIndex:2];
+        [_tableView reloadSections:indexSet withRowAnimation:UITableViewRowAnimationAutomatic];
+        
+        NSData *data = UIImageJPEGRepresentation(image, 1.0f);
+        NSString *encodedImageStr = [data base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+        [self.dataSourceBase64Arr addObject:encodedImageStr];
+        self._leaveImg = encodedImageStr;
+    }
+}
+
+/**
+ cell2代理回调
+ */
+- (void)sendBackAddImage{
+    YBImgPickerViewController * next = [[YBImgPickerViewController alloc]init];
+    [next showInViewContrller:self choosenNum:0 delegate:self];
+}
+
+- (void)sendBackCheckImage{
+    NSLog(@"查看图片");
+    UIViewController *rootController = [self.keyWindow rootViewController];
+    [rootController presentViewController:self.photoNavigationController animated:YES completion:nil];
+    [_photoBrowser setCurrentPhotoIndex:0];
+}
+
+- (void)sendBackDelImage {
+    NSLog(@"删除图片");
+    Registration2Model* model = [self.dataSourceArr2 lastObject];
+    model.useImage = nil;
+    
+    NSIndexSet *indexSet=[[NSIndexSet alloc]initWithIndex:2];
+    [_tableView reloadSections:indexSet withRowAnimation:UITableViewRowAnimationAutomatic];
+}
+
+
+/**
+ cell3代理回调
+
+ @param index 删除第几个
+ */
+- (void)sendBackDel3:(NSInteger)index{
+    NSLog(@"删除:%ld",index);
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (1 == buttonIndex) {
+        NSLog(@"删除");
+        Registration3Model* m1 = [self.dataSourceArr3 lastObject];
+        [m1.approvalArr removeAllObjects];
+        [m1.approvalArr addObject:@""];
+        self._auditPers = @"";
+        [_tableView reloadSections:[[NSIndexSet alloc]initWithIndex:3] withRowAnimation:UITableViewRowAnimationAutomatic];
+    }
+}
+
+
+- (void)sendBackAdd3{
+    Registration3Model* m1 = [self.dataSourceArr3 lastObject];
+    if (m1.approvalArr.count) {
+        UIAlertView* al = [[UIAlertView alloc] initWithTitle:@"提示" message:@"是否要删除审核人" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+        [al show];
+    }else {
+        ContactViewController* vc = [[ContactViewController alloc] init];
+        vc.isFromAndy = YES;
+        vc.ContactViewControllerDelegate = self;
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+    
+}
+
+#pragma mark - 代理返回选中的通知者
+- (void)sendBackName:(NSString *)_name AndId:(NSString *)_id {
+    self.dataSourceArr3 = [[NSMutableArray alloc] init];
+    Registration3Model* m1 = [[Registration3Model alloc] init];
+    m1.approvalArr = [[NSMutableArray alloc] initWithObjects:_name, nil];
+    self._auditPers = _id;
+    [self.dataSourceArr3 addObject:m1];
+    
+    [_tableView reloadSections:[[NSIndexSet alloc]initWithIndex:3] withRowAnimation:UITableViewRowAnimationAutomatic];
+}
+
+#pragma mark - getter 创建一个显示图片的window
+- (UIWindow *)keyWindow{
+    if(_keyWindow == nil){
+        _keyWindow = [[UIApplication sharedApplication] keyWindow];
+    }
+    return _keyWindow;
+}
+#pragma mark - 初始化MWPhotoBrowser
+- (MWPhotoBrowser *)photoBrowser{
+    if (_photoBrowser == nil) {
+        _photoBrowser = [[MWPhotoBrowser alloc] initWithDelegate:self];
+        _photoBrowser.displayActionButton = YES;
+        _photoBrowser.displayNavArrows = YES;
+        _photoBrowser.displaySelectionButtons = NO;
+        _photoBrowser.alwaysShowControls = NO;
+        _photoBrowser.wantsFullScreenLayout = YES;
+        _photoBrowser.zoomPhotosToFill = YES;
+        _photoBrowser.enableGrid = NO;
+        _photoBrowser.startOnGrid = NO;
+    }
+    return _photoBrowser;
+}
+
+- (UINavigationController *)photoNavigationController{
+    if (_photoNavigationController == nil) {
+        _photoNavigationController = [[UINavigationController alloc] initWithRootViewController:self.photoBrowser];
+        _photoNavigationController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    }
+    [self.photoBrowser reloadData];
+    return _photoNavigationController;
+}
+
+#pragma mark - MWPhotoBrowserDelegate
+- (NSUInteger)numberOfPhotosInPhotoBrowser:(MWPhotoBrowser *)photoBrowser{
+    return [self.photos count];
+}
+
+- (id <MWPhoto>)photoBrowser:(MWPhotoBrowser *)photoBrowser photoAtIndex:(NSUInteger)index{
+    if (index < self.photos.count){
+        return [self.photos objectAtIndex:index];
+    }
+    return nil;
+}
+
+- (void)viewWillAppear:(BOOL)animated{
+    [[self rdv_tabBarController] setTabBarHidden:YES animated:YES];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

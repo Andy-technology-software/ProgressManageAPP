@@ -1,0 +1,151 @@
+//
+//  IncreaseViewController.m
+//  ProgressManage
+//
+//  Created by Gem on 2017/5/26.
+//  Copyright © 2017年 xurenqinag. All rights reserved.
+//
+
+#import "IncreaseViewController.h"
+#import "ValuePickerView.h"
+#import "UITextView+placeholder.h"
+@interface IncreaseViewController ()<UITableViewDataSource,UITableViewDelegate,UITextFieldDelegate,UITextViewDelegate>{
+    NSMutableArray *titleArr;
+    NSMutableArray *palceArr;
+    NSInteger indexs;
+    
+}
+@property (nonatomic,strong) UITableView* tableView;
+@property (nonatomic, strong) ValuePickerView *pickerView;
+@property (nonatomic,strong) NSMutableArray *titleSource;
+@property (nonatomic,strong) NSMutableArray *dataSource;
+
+@end
+
+@implementation IncreaseViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.title = @"新增";
+    self.pickerView = [[ValuePickerView alloc]init];
+    self.pickerView.pickerTitle = @"";
+    self.view.backgroundColor = [MyController colorWithHexString:@"f9fafb"];
+    self.dataSource = [NSMutableArray arrayWithObjects:@"",@"",@"",@"",@"",@"", nil];
+    self.titleSource = [NSMutableArray arrayWithObjects:@"主题",@"客户",@"金额",@"类型",@"阶段",@"备注", nil];
+    [self createTableView];
+    UIButton *submitBtn = [MyController createButtonWithFrame:CGRectMake(0, SCREEN_HEIGHT - 40, SCREEN_WIDTH, 40) ImageName:nil Target:self Action:@selector(submitAction:) Title:@"提交"];
+    submitBtn.backgroundColor = [MyController colorWithHexString:@"4c89f0"];
+    [self.view addSubview:submitBtn];
+}
+#pragma mark - 提交审核
+- (void)submitAction:(UIButton *)btn{
+}
+#pragma mark - 初始化tableView
+- (void)createTableView{
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, [MyController isIOS7] + 15, self.view.frame.size.width, self.view.frame.size.height - [MyController isIOS7] - 49) style:UITableViewStylePlain];
+    _tableView.dataSource = self;
+    _tableView.delegate = self;
+    _tableView.backgroundColor = [MyController colorWithHexString:@"f9fafb"];
+    //分割线类型
+    _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _tableView.showsVerticalScrollIndicator = NO;
+
+    [self.view addSubview:_tableView];
+}
+#pragma mark - tableView行数
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return self.titleSource.count;
+    
+}
+
+#pragma mark - tableVie点击cell
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    __weak typeof(self) weakSelf = self;
+//    NSMutableArray *temp = [NSMutableArray arrayWithObjects:@"1",@"2","3", nil];
+    self.pickerView.dataSource= [NSArray arrayWithArray:self.titleSource];
+    self.pickerView.valueDidSelect = ^(NSString *value){
+        NSArray * stateArr = [value componentsSeparatedByString:@"/"];
+        [weakSelf.dataSource replaceObjectAtIndex:indexPath.row withObject:stateArr[0]];
+        [weakSelf.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObjects:indexPath,nil] withRowAnimation:UITableViewRowAnimationNone];
+    };
+    
+    [self.pickerView show];
+
+}
+#pragma mark - 自定义tableView
+- (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    UITableViewCell *cell = [[UITableViewCell alloc] init];
+    cell.backgroundColor = [UIColor clearColor];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    UIView *bgView = [UIView new];
+    bgView.frame = CGRectMake(15, 0, SCREEN_WIDTH - 30, 44);
+    bgView.backgroundColor = [UIColor whiteColor];
+    [cell addSubview:bgView];
+    UILabel *titlelabel = [UILabel new];
+    titlelabel.font = [UIFont systemFontOfSize:14];
+    titlelabel.textColor = [MyController colorWithHexString:@"81889d"];
+    titlelabel.text = [NSString stringWithFormat:@"%@",self.titleSource[indexPath.row]];
+    titlelabel.frame = CGRectMake(15, 0, 40, 44);
+    titlelabel.numberOfLines = 2;
+    [bgView addSubview:titlelabel];
+    if (indexPath.row == 0 || indexPath.row == 2) {
+        UITextField *tf = [MyController createTextFieldWithFrame:CGRectMake(CGRectGetMaxX(titlelabel.frame) + 15 ,  0, [MyController getScreenWidth] - 110, 44) placeholder:@"请填写" passWord:NO leftImageView:nil rightImageView:nil Font:12];
+        tf.text = self.dataSource[indexPath.row];
+        tf.tag = 100 + indexPath.row;
+        tf.delegate = self;
+        [bgView addSubview:tf];
+        UIView *line = [[UIView alloc] initWithFrame:CGRectMake(15, 44-0.5, [MyController getScreenWidth] - 60, 0.5)];
+        line.backgroundColor = [MyController colorWithHexString:@"e8e8e8"];
+        [bgView addSubview:line];
+
+    }else if (indexPath.row == 5){
+        
+        UITextView *tv = [[UITextView alloc] initWithFrame:CGRectMake(CGRectGetMaxX(titlelabel.frame) + 10,6, [MyController getScreenWidth] - 110, 154)];
+        tv.font = [UIFont systemFontOfSize:12];
+        tv.placeholder = @"请填写";
+        tv.delegate = self;
+        tv.tag = 100 + indexPath.row;
+        [bgView addSubview:tv];
+        UIView *line = [[UIView alloc] initWithFrame:CGRectMake(15, 160 - 0.5, [MyController getScreenWidth] - 60, 0.5)];
+        line.backgroundColor = [MyController colorWithHexString:@"e8e8e8"];
+        [bgView addSubview:line];
+        bgView.frame = CGRectMake(15, 0, SCREEN_WIDTH - 30, 160);
+    }else{
+        UILabel *selectLabel = [MyController createLabelWithFrame:CGRectMake(CGRectGetMaxX(titlelabel.frame) + 15, 0, [MyController getScreenWidth] - 110, 44) Font:12 Text:nil];
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        if ([self.dataSource[indexPath.row] length]) {
+            selectLabel.text = self.dataSource[indexPath.row];
+            selectLabel.textColor = [UIColor blackColor];
+        }else{
+            selectLabel.text = @"请选择";
+            selectLabel.textColor = [MyController colorWithHexString:@"d3d3d8"];
+        }
+        [bgView addSubview:selectLabel];
+        UIView *line = [[UIView alloc] initWithFrame:CGRectMake(15,44-0.5 , [MyController getScreenWidth] - 60, 0.5)];
+        line.backgroundColor = [MyController colorWithHexString:@"e8e8e8"];
+        [bgView addSubview:line];
+    }
+      return cell;
+}
+#pragma mark - tableView行高
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (indexPath.row == 5) {
+        return 200;
+    }
+    return 44;
+}
+
+- (void)textViewDidEndEditing:(UITextView *)textView{
+    NSInteger index = textView.tag - 100;
+    [self.dataSource replaceObjectAtIndex:index withObject:textView.text];
+  
+}
+- (void)textFieldDidEndEditing:(UITextField *)textField{
+    NSInteger index = textField.tag - 100;
+    [self.dataSource replaceObjectAtIndex:index withObject:textField.text];
+}
+
+
+@end
